@@ -566,53 +566,8 @@
             .flashcard-wrap { max-width: 550px; height: 380px; }
             .mode-list { display: flex; gap: 15px; }
             .mode-card { flex: 1; }
-            .mode-toggle { max-width: 400px; margin: 0 auto; }
         }
 
-        /* 模式切换开关 */
-        .mode-toggle-container {
-            padding: 15px 20px 5px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .mode-toggle {
-            display: flex;
-            background: rgba(255,255,255,0.45);
-            border-radius: 12px;
-            padding: 3px;
-            border: 0.5px solid rgba(255,255,255,0.5);
-        }
-        .mode-toggle-btn {
-            flex: 1;
-            text-align: center;
-            padding: 10px 0;
-            border-radius: 10px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.25s cubic-bezier(0.25, 0.1, 0.25, 1);
-            color: rgba(255,255,255,0.7);
-            border: none;
-            background: transparent;
-        }
-        .mode-toggle-btn.active {
-            background: rgba(255,255,255,0.95);
-            color: #007aff;
-            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-        }
-        .mode-toggle-btn:active { transform: scale(0.97); }
-
-        /* 模式标签（章节列表页） */
-        .mode-badge {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-bottom: 6px;
-        }
-        .mode-badge.review { background: #fff3e0; color: #ff9500; }
-        .mode-badge.study { background: #e3f2fd; color: #007aff; }
     </style>
 </head>
 <body>
@@ -623,12 +578,6 @@
             <div class="binary-rain" id="binaryRain"></div>
             <h1>习新思想记忆卡片</h1>
             <p class="subtitle">习近平新时代中国特色社会主义思想概论</p>
-            <div class="mode-toggle-container">
-                <div class="mode-toggle">
-                    <button class="mode-toggle-btn active" id="btn-review-mode" onclick="switchDataMode('review')">🔴 重点复习</button>
-                    <button class="mode-toggle-btn" id="btn-study-mode" onclick="switchDataMode('study')">🔵 学习模式</button>
-                </div>
-            </div>
         </div>
         <div class="chapter-list">
             <div class="chapter-card ch-dalun" onclick="goToModePage('dalun')">
@@ -775,7 +724,6 @@
                 </div>
                 <div class="chapter-arrow">›</div>
             </div>
-
 
             </div>
 
@@ -925,54 +873,12 @@
         }
         
         var currentChapter = '';
-        var currentDataMode = 'review';  // 'review' = 重点复习, 'study' = 学习模式
         var cards = [];
         var currentCardIndex = 0;
         var cardIsFlipped = false;
         var wrongCardIsFlipped = false;
         var masteredCards = [];
         var reviewCards = [];
-        var studyData = {};  // 学习模式数据（后续通过Excel导入）
-        
-        // 模式切换
-        function switchDataMode(mode) {
-            currentDataMode = mode;
-            var btnReview = document.getElementById('btn-review-mode');
-            var btnStudy = document.getElementById('btn-study-mode');
-            if (mode === 'review') {
-                btnReview.classList.add('active');
-                btnStudy.classList.remove('active');
-            } else {
-                btnReview.classList.remove('active');
-                btnStudy.classList.add('active');
-            }
-            // 刷新章节列表的提示
-            updateChapterListBadges();
-        }
-        
-        // 获取当前模式对应的数据
-        function getCurrentData() {
-            if (currentDataMode === 'study') {
-                return studyData;
-            }
-            return chapterData;
-        }
-        
-        // 刷新首页章节卡片的模式标签
-        function updateChapterListBadges() {
-            // 重点复习：显示已有卡片数
-            // 学习模式：显示"学习模式"标签，无内容时显示"暂无内容"
-            var modeName = currentDataMode === 'review' ? '复习' : '学习';
-            var modeClass = currentDataMode === 'review' ? 'review' : 'study';
-            var data = getCurrentData();
-            // 更新页面标题后缀
-            var subtitle = document.querySelector('#home-page .subtitle');
-            if (subtitle) {
-                subtitle.textContent = '习近平新时代中国特色社会主义思想概论 · ' + modeName + '模式';
-            }
-        }
-        
-        // 卡片数据（导论）
         var chapterData = {
             "dalun": [
                 { "id": "DL-01", "front": "习近平新时代中国特色社会主义思想是在什么时代背景下创立的？", "back": "世界百年未有之大变局加速演进，中华民族伟大复兴进入关键时期，党面临执政新考验。", "tip": "【记忆提示】两个大局：世界大变局 + 民族伟大复兴关键期" },
@@ -1395,7 +1301,10 @@
             'ch17': '第十七章 全面从严治党'
         };
         
-;
+        // 获取当前数据（只保留重点复习数据）
+        function getCurrentData() {
+            return chapterData;
+        }
 
         function showPage(pageId) {
             var pages = document.querySelectorAll('.page');
@@ -1420,7 +1329,7 @@
             document.body.classList.add('ch-' + chapter);
             // 根据章节ID显示正确的名称，并附上当前模式
             var title = chapterNames[chapter] || '未知章节';
-            var modeLabel = currentDataMode === 'review' ? '【复习】' : '【学习】';
+            var modeLabel = '【复习】';
             document.getElementById('mode-page-title').textContent = modeLabel + title;
             showPage('mode-page');
         }
@@ -1438,8 +1347,7 @@
                 showPage('card-page');
                 displayCard('next');
             } else {
-                var modeName = currentDataMode === 'review' ? '复习' : '学习';
-                alert('【' + modeName + '模式】该章节暂无卡片内容，请切换模式或先导入内容！');
+                alert('【复习模式】该章节暂无卡片内容，请先导入内容！');
             }
         }
 
@@ -1459,8 +1367,7 @@
                 showPage('wrong-page');
                 displayWrongCard('next');
             } else {
-                var modeName = currentDataMode === 'review' ? '复习' : '学习';
-                alert('【' + modeName + '模式】该章节暂无卡片内容，请切换模式或先导入内容！');
+                alert('【复习模式】该章节暂无卡片内容，请先导入内容！');
             }
         }
 
@@ -2272,7 +2179,6 @@
         // 页面加载完成后初始化二进制数据流
         window.onload = function() { initBinaryRain(); };
     </script>
-
 
 </body>
 </html>
