@@ -920,6 +920,7 @@
         var wrongCardIsFlipped = false;
         var masteredCards = [];
         var reviewCards = [];
+        var fireworksShown = false;  // 确保每章只触发一次烟花
         
         // 卡片数据（导论）
         var chapterData = {
@@ -1362,6 +1363,7 @@
 
         function goToModePage(chapter) {
             currentChapter = chapter;
+            fireworksShown = false;  // 进入章节时重置烟花标志
             // 移除所有章节主题类
             document.body.className = document.body.className.replace(/ch-\w+/g, '').trim();
             // 添加当前章节主题类
@@ -1379,6 +1381,7 @@
             if (chapterData[currentChapter]) {
                 cards = chapterData[currentChapter];
                 currentCardIndex = 0;
+                fireworksShown = false;  // 开始卡片模式时重置烟花标志
                 loadProgress();
                 showPage('card-page');
                 displayCard('next');
@@ -1473,6 +1476,7 @@
                 reviewCards = reviewCards.filter(function(id) { return id !== cardId; });
             } else if (status === 'review') {
                 if (reviewCards.indexOf(cardId) === -1) reviewCards.push(cardId);
+                fireworksShown = false;  // 取消掌握时重置烟花标志，允许重新触发
             }
             saveProgress();
             nextCard();
@@ -1542,8 +1546,9 @@
             var pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
             document.getElementById('card-progress').style.width = pct + '%';
             document.getElementById('card-progress-text').textContent = '已掌握 ' + mastered + ' / ' + total;
-            // 全部掌握时触发烟花
-            if (mastered === total && total > 0) {
+            // 全部掌握时触发烟花（每章只触发一次）
+            if (mastered === total && total > 0 && !fireworksShown) {
+                fireworksShown = true;
                 setTimeout(function() { launchFireworks('本章全部掌握！🎉'); }, 300);
             }
         }
