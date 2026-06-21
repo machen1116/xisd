@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>习新思想记忆卡片</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f2f2f7;
+            color: #1d1d1f;
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.5s ease;
+        }
+        
+        /* 各章节主题背景 */
+        body.ch-dalun {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f2f2f7 50%, #e8eaf6 100%);
+        }
+        body.ch-ch1 {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f2f2f7 50%, #f1f8e9 100%);
+        }
+        body.ch-ch2 {
+            background: linear-gradient(135deg, #f3e5f5 0%, #f2f2f7 50%, #ede7f6 100%);
+        }
+        body.ch-ch3 {
+            background: linear-gradient(135deg, #fff3e0 0%, #f2f2f7 50%, #fbe9e7 100%);
+        }
+        body.ch-ch4 {
+            background: linear-gradient(135deg, #ffebee 0%, #f2f2f7 50%, #fce4ec 100%);
+        }
+        
+        .page { display: none; min-height: 100vh; padding-bottom: 100px; }
+        .page.active { display: block; }
+        
+        /* iOS 风格头部 */
+        .header {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            color: #1d1d1f;
+            padding: 50px 20px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 0.5px solid rgba(0,0,0,0.1);
+        }
+        
+        .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .header h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+        .subtitle { font-size: 13px; color: #86868b; }
+        
+        /* 首页科技感头部背景 */
+        #home-page .header {
+            position: relative;
+            padding: 60px 20px 40px;
+            overflow: hidden;
+            border-bottom: none;
+            color: white;
+        }
+        #home-page .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #003a8c 0%, #007aff 50%, #5856d6 100%);
+            z-index: -2;
+        }
+        /* 网格线装饰 */
+        #home-page .header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            opacity: 0.12;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: gridMove 4s linear infinite;
+        }
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 30px); }
+        }
+        /* 二进制数据流 */
+        .binary-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .binary-column {
+            position: absolute;
+            top: -100%;
+            font-size: 13px;
+            line-height: 18px;
+            color: rgba(120, 200, 255, 0.25);
+            white-space: pre;
+            animation: fall linear infinite;
+            writing-mode: vertical-lr;
+            letter-spacing: 4px;
+        }
+        @keyframes fall {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(300%) translateX(-10px); opacity: 0; }
+        }
+        
+        #home-page .header h1 {
+            font-size: 24px;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            margin-bottom: 8px;
+        }
+        #home-page .header .subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.85);
+        }
+        
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50px;
+            background: rgba(0,122,255,0.1);
+            border: none;
+            color: #007aff;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        /* 进度条 iOS 风格 */
+        .progress-wrap { padding: 0 20px; margin-top: 12px; }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(0,0,0,0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007aff, #5856d6);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border-radius: 2px;
+        }
+        .progress-text { font-size: 11px; color: #86868b; margin-top: 6px; }
+        
+        /* 磨砂玻璃卡片 */
+        .chapter-list { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .chapter-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-radius: 16px;
+            padding: 20px 20px 20px 28px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border: 0.5px solid rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        /* iOS 风格左边竖条 */
+        .chapter-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            border-radius: 0 3px 3px 0;
+            background: #007aff;
+            transition: height 0.2s ease;
+        }
+        .chapter-card:active { transform: scale(0.98); background: rgba(255,255,255,0.9); }
+        .chapter-card:active::before { height: 75%; }
+        /* 悬浮动画效果 */
+        .chapter-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 16px 40px rgba(0,0,0,0.04);
+        }
+        /* 各章节竖条颜色 */
+        .chapter-card.ch-dalun::before { background: #007aff; }
+        .chapter-card.ch-ch1::before { background: #34c759; }
+        .chapter-card.ch-ch2::before { background: #af52de; }
+        .chapter-card.ch-ch3::before { background: #ff9500; }
+        .chapter-card.ch-ch4::before { background: #ff3b30; }
+        .chapter-card.ch-ch5::before { background: #5856d6; }
+        .chapter-card.ch-ch6::before { background: #00c7be; }
+        .chapter-card.ch-ch7::before { background: #ff2d55; }
+        .chapter-card.ch-ch8::before { background: #64d2ff; }
+        .chapter-icon { font-size: 32px; margin-right: 15px; }
+        .chapter-info { flex: 1; }
+        .chapter-info h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; color: #1d1d1f; }
+        .chapter-info p { font-size: 13px; color: #86868b; }
+        .chapter-arrow { font-size: 20px; color: #c7c7cc; }
+        
+        /* 模式选择 */
+        .mode-list { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .mode-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-radius: 16px;
+            padding: 28px 20px;
+            margin-bottom: 12px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border: 0.5px solid rgba(255,255,255,0.5);
+        }
+        .mode-card:active { transform: scale(0.98); background: rgba(255,255,255,0.9); }
+        .mode-icon { font-size: 44px; margin-bottom: 12px; }
+        .mode-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #1d1d1f; }
+        .mode-card p { font-size: 14px; color: #86868b; margin-bottom: 4px; }
+        .mode-desc { font-size: 12px; color: #aeaeb2; }
+        
+        /* 卡片模式 - 磨砂玻璃 */
+        .card-container {
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .flashcard-wrap {
+            width: 100%;
+            max-width: 400px;
+            height: 380px;
+            perspective: 1200px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+            cursor: pointer;
+            will-change: transform;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+        
+        .flashcard.flipped { transform: rotateY(180deg); }
+        
+        .card-front, .card-back {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: table;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+        }
+
+        .card-inner {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+            padding: 24px 20px;
+            box-sizing: border-box;
+        }
+        
+        .card-front {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255,255,255,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+        /* 卡片正面左边竖条 - 章节主题色 */
+        .card-front::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 0%;
+            border-radius: 0 3px 3px 0;
+            transition: height 0.3s ease;
+        }
+        .flashcard-wrap:hover .card-front::before { height: 60%; }
+        .flashcard-wrap .card-front::before { height: 60%; }
+        /* 各章节卡片正面竖条颜色 */
+        body.ch-dalun .card-front::before { background: #007aff; }
+        body.ch-ch1 .card-front::before { background: #34c759; }
+        body.ch-ch2 .card-front::before { background: #af52de; }
+        body.ch-ch3 .card-front::before { background: #ff9500; }
+        body.ch-ch4 .card-front::before { background: #ff3b30; }
+        body.ch-ch5 .card-front::before { background: #5856d6; }
+        body.ch-ch6 .card-front::before { background: #00c7be; }
+        body.ch-ch7 .card-front::before { background: #ff2d55; }
+        body.ch-ch8 .card-front::before { background: #64d2ff; }
+        .card-front p { font-size: 18px; color: #1d1d1f; line-height: 1.8; font-weight: 500; padding-left: 12px; }
+        
+        .card-back {
+            color: white;
+            transform: rotateY(180deg);
+            flex-direction: column;
+            /* 默认渐变（导论） */
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+        }
+        /* 各章节卡片背面渐变 */
+        body.ch-dalun .card-back { background: linear-gradient(135deg, #007aff 0%, #5856d6 100%); }
+        body.ch-ch1 .card-back { background: linear-gradient(135deg, #ff3b30 0%, #ff6482 100%); }
+        body.ch-ch2 .card-back { background: linear-gradient(135deg, #af52de 0%, #bf5af2 100%); }
+        body.ch-ch3 .card-back { background: linear-gradient(135deg, #ff9500 0%, #ffd60a 100%); }
+        body.ch-ch4 .card-back { background: linear-gradient(135deg, #ff3b30 0%, #ff6482 100%); }
+        body.ch-ch5 .card-back { background: linear-gradient(135deg, #5856d6 0%, #64d2ff 100%); }
+        body.ch-ch6 .card-back { background: linear-gradient(135deg, #00c7be 0%, #30d158 100%); }
+        body.ch-ch7 .card-back { background: linear-gradient(135deg, #ff2d55 0%, #ff6a4d 100%); }
+        body.ch-ch8 .card-back { background: linear-gradient(135deg, #64d2ff 0%, #007aff 100%); }
+        .card-back p { font-size: 15px; line-height: 1.7; margin-bottom: 10px; overflow-wrap: break-word; }
+        .card-back .card-tip { font-size: 12px; opacity: 0.85; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.25); max-width: 100%; }
+        .card-tip {
+            font-size: 12px;
+            opacity: 0.85;
+            border-top: 1px solid rgba(255,255,255,0.25);
+            padding-top: 15px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        /* 卡片切换动画 */
+        .card-slide-left {
+            animation: slideLeft 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        .card-slide-right {
+            animation: slideRight 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        @keyframes slideLeft {
+            0% { opacity: 1; transform: translateX(0) rotateY(0); }
+            100% { opacity: 0; transform: translateX(-60px) rotateY(10deg); }
+        }
+        @keyframes slideRight {
+            0% { opacity: 1; transform: translateX(0) rotateY(0); }
+            100% { opacity: 0; transform: translateX(60px) rotateY(-10deg); }
+        }
+        .card-enter-left {
+            animation: enterLeft 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        .card-enter-right {
+            animation: enterRight 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        @keyframes enterLeft {
+            0% { opacity: 0; transform: translateX(60px) rotateY(-10deg); }
+            100% { opacity: 1; transform: translateX(0) rotateY(0); }
+        }
+        @keyframes enterRight {
+            0% { opacity: 0; transform: translateX(-60px) rotateY(10deg); }
+            100% { opacity: 1; transform: translateX(0) rotateY(0); }
+        }
+        
+        /* 操作按钮 iOS 风格 */
+        .card-actions { display: flex; gap: 12px; margin-bottom: 25px; }
+        .action-btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .action-btn:active { transform: scale(0.95); }
+        .btn-review { background: #fff3e0; color: #ff9500; }
+        .btn-mastered { background: #e8f5e9; color: #34c759; }
+        
+        .card-nav { display: flex; gap: 15px; }
+        .nav-btn {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 0.5px solid rgba(0,0,0,0.06);
+            padding: 10px 22px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #007aff;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .nav-btn:active { transform: scale(0.95); background: rgba(0,122,255,0.08); }
+        
+        /* 背诵模式 */
+        .recite-container {
+            margin: 20px;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-radius: 16px;
+            padding: 24px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+            border: 0.5px solid rgba(255,255,255,0.5);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .recite-container h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #1d1d1f;
+            border-bottom: 2px solid #007aff;
+            padding-bottom: 10px;
+            letter-spacing: -0.3px;
+        }
+        .recite-container h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 22px;
+            margin-bottom: 10px;
+            color: #007aff;
+        }
+        .recite-item {
+            line-height: 2.2;
+            font-size: 15px;
+            padding: 10px 0;
+            border-bottom: 0.5px solid #f2f2f7;
+            color: #1d1d1f;
+        }
+        .recite-item:last-child { border-bottom: none; }
+        strong { color: #007aff; font-weight: 600; }
+        
+        /* 错题本按钮 */
+        .wrong-btn {
+            background: rgba(255,59,48,0.08);
+            border: none;
+            color: #ff3b30;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        .wrong-btn:active { transform: scale(0.95); background: rgba(255,59,48,0.15); }
+        
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 40px 20px 30px;
+            color: #aeaeb2;
+            font-size: 12px;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aeaeb2;
+        }
+        .empty-state .empty-icon { font-size: 64px; margin-bottom: 15px; }
+        .empty-state p { font-size: 16px; }
+        
+        /* 响应式 */
+        @media (max-width: 480px) {
+            .flashcard-wrap { height: 280px; }
+            .card-front p { font-size: 16px; }
+            .card-back p { font-size: 14px; }
+            .action-btn { padding: 10px 22px; font-size: 14px; }
+        }
+        @media (min-width: 481px) and (max-width: 768px) {
+            .flashcard-wrap { max-width: 500px; height: 360px; }
+        }
+        @media (min-width: 769px) {
+            .flashcard-wrap { max-width: 550px; height: 380px; }
+            .mode-list { display: flex; gap: 15px; }
+            .mode-card { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 首页 -->
+    <div id="home-page" class="page active">
+        <div class="header">
+            <div class="binary-rain" id="binaryRain"></div>
+            <h1>习新思想记忆卡片</h1>
+            <p class="subtitle">习近平新时代中国特色社会主义思想概论</p>
+        </div>
+        <div class="chapter-list">
+            <div class="chapter-card ch-dalun" onclick="goToModePage('dalun')">
+                <div class="chapter-info">
+                    <h3>导论</h3>
+                    <p>习近平新时代中国特色社会主义思想概论·导论</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch1" onclick="goToModePage('ch1')">
+                <div class="chapter-info">
+                    <h3>第一章</h3>
+                    <p>新时代坚持和发展中国特色社会主义</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch2" onclick="goToModePage('ch2')">
+                <div class="chapter-info">
+                    <h3>第二章</h3>
+                    <p>以中国式现代化全面推进中华民族伟大复兴</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch3" onclick="goToModePage('ch3')">
+                <div class="chapter-info">
+                    <h3>第三章</h3>
+                    <p>坚持党的全面领导</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+        </div>
+        <div class="footer">
+            <p>© 2026 马辰老师出品</p>
+        </div>
+    </div>
+
+    <!-- 模式选择页 -->
+    <div id="mode-page" class="page">
+        <div class="header">
+            <button class="back-btn" onclick="goHome()">‹ 返回</button>
+            <h2 id="mode-page-title">选择学习模式</h2>
+        </div>
+        <div class="mode-list">
+            <div class="mode-card" onclick="startCardMode()">
+                <div class="mode-icon">🃏</div>
+                <h3>卡片模式</h3>
+                <p>翻转卡片，正面问题 → 点击看答案</p>
+                <p class="mode-desc">适合自测记忆效果</p>
+            </div>
+            <div class="mode-card" onclick="startReciteMode()">
+                <div class="mode-icon">📖</div>
+                <h3>背诵模式</h3>
+                <p>纯文字列表，一句一行，加粗关键词</p>
+                <p class="mode-desc">适合朗读、早读、快速过一遍</p>
+            </div>
+            <div class="mode-card" onclick="startWrongMode()">
+                <div class="mode-icon">📝</div>
+                <h3>错题本</h3>
+                <p>只复习标记"需复习"的卡片</p>
+                <p class="mode-desc">针对性强化薄弱环节</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 卡片模式页 -->
+    <div id="card-page" class="page">
+        <div class="header">
+            <button class="back-btn" onclick="goModePage()">‹ 返回</button>
+            <h2 id="card-page-title">🃏 卡片模式</h2>
+            <div class="progress-wrap">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="card-progress"></div>
+                </div>
+                <p class="progress-text" id="card-progress-text">0 / 0</p>
+            </div>
+        </div>
+        <div class="card-container">
+            <div class="flashcard-wrap">
+                <div class="flashcard" id="flashcard" onclick="flipCard()">
+                    <div class="card-front">
+                        <div class="card-inner">
+                            <p id="card-front-text">加载中...</p>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-inner">
+                            <p id="card-back-text"></p>
+                            <p class="card-tip" id="card-tip"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="action-btn btn-review" onclick="event.stopPropagation(); markCard('review')">🔁 需复习</button>
+                <button class="action-btn btn-mastered" onclick="event.stopPropagation(); markCard('mastered')">✅ 已掌握</button>
+            </div>
+            <div class="card-nav">
+                <button class="nav-btn" onclick="prevCard()">‹ 上一题</button>
+                <button class="nav-btn" onclick="nextCard()">下一题 ›</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 错题本页面 -->
+    <div id="wrong-page" class="page">
+        <div class="header">
+            <button class="back-btn" onclick="goModePage()">‹ 返回</button>
+            <h2>📝 错题本</h2>
+            <div class="progress-wrap">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="wrong-progress"></div>
+                </div>
+                <p class="progress-text" id="wrong-progress-text">0 / 0</p>
+            </div>
+        </div>
+        <div class="card-container">
+            <div class="flashcard-wrap">
+                <div class="flashcard" id="wrong-flashcard" onclick="flipWrongCard()">
+                    <div class="card-front">
+                        <p id="wrong-front-text">加载中...</p>
+                    </div>
+                    <div class="card-back">
+                        <p id="wrong-back-text"></p>
+                        <p class="card-tip" id="wrong-tip"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="action-btn btn-review" onclick="event.stopPropagation(); markWrongCard('review')">🔁 还需复习</button>
+                <button class="action-btn btn-mastered" onclick="event.stopPropagation(); markWrongCard('mastered')">✅ 已掌握</button>
+            </div>
+            <div class="card-nav">
+                <button class="nav-btn" onclick="prevWrongCard()">‹ 上一题</button>
+                <button class="nav-btn" onclick="nextWrongCard()">下一题 ›</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 背诵模式页 -->
+    <div id="recite-page" class="page">
+        <div class="header">
+            <button class="back-btn" onclick="goModePage()">‹ 返回</button>
+            <h2>背诵模式</h2>
+        </div>
+        <div class="recite-container" id="recite-container">
+            <p>加载中...</p>
+        </div>
+    </div>
+
+    <script>
+        // 生成二进制数据流
+        function initBinaryRain() {
+            var container = document.getElementById('binaryRain');
+            if (!container) return;
+            var colCount = Math.floor(window.innerWidth / 35);
+            for (var i = 0; i < colCount; i++) {
+                var col = document.createElement('div');
+                col.className = 'binary-column';
+                col.style.left = (i * 35 + Math.random() * 15) + 'px';
+                col.style.animationDuration = (4 + Math.random() * 6) + 's';
+                col.style.animationDelay = (-Math.random() * 8) + 's';
+                // 生成随机二进制字符串
+                var text = '';
+                for (var j = 0; j < 30; j++) {
+                    text += Math.random() > 0.5 ? '1' : '0';
+                }
+                col.textContent = text;
+                container.appendChild(col);
+            }
+        }
+        
+        var currentChapter = '';
+        var cards = [];
+        var currentCardIndex = 0;
+        var masteredCards = [];
+        var reviewCards = [];
+        
+        // 卡片数据（导论）
+        var chapterData = {
+            "dalun": [
+                { "id": "DL-01", "front": "习近平新时代中国特色社会主义思想是在什么时代背景下创立的？", "back": "世界百年未有之大变局加速演进，中华民族伟大复兴进入关键时期，党面临执政新考验。", "tip": "【记忆提示】两个大局：世界大变局 + 民族伟大复兴关键期" },
+                { "id": "DL-02", "front": "“十个明确”是什么层面的内容？", "back": "“十个明确”是习近平新时代中国特色社会主义思想理论层面的核心要义，回答了“新时代坚持和发展什么样的中国特色社会主义”。", "tip": "【记忆提示】十个明确 = 理论层面（是什么）" },
+                { "id": "DL-03", "front": "“十四个坚持”是什么层面的内容？", "back": "“十四个坚持”是习近平新时代中国特色社会主义思想实践层面的基本方略，回答了“新时代怎样坚持和发展中国特色社会主义”。", "tip": "【记忆提示】十四个坚持 = 实践层面（怎么做）" },
+                { "id": "DL-04", "front": "“十三个方面成就”从什么层面总结了习近平新时代中国特色社会主义思想？", "back": "“十三个方面成就”从实践成果层面总结了新时代党和国家事业取得的历史性成就、发生的历史性变革。", "tip": "【记忆提示】十三个方面成就 = 实践成果（做成了什么）" },
+                { "id": "DL-05", "front": "习近平新时代中国特色社会主义思想的历史地位是什么？", "back": "是当代中国马克思主义、二十一世纪马克思主义，是中华文化和中国精神的时代精华，实现了马克思主义中国化时代化新的飞跃。", "tip": "【记忆提示】三个定位：当代中国马克思主义 + 二十一世纪马克思主义 + 中华文化/精神的时代精华" },
+                { "id": "DL-06", "front": "“两个结合”指的是什么？", "back": "把马克思主义基本原理同中国具体实际相结合、同中华优秀传统文化相结合。", "tip": "【记忆提示】两个结合 = 中国实际 + 中华优秀传统文化" },
+                { "id": "DL-07", "front": "中国特色社会主义最本质的特征是什么？", "back": "中国共产党的领导是中国特色社会主义最本质的特征，是中国特色社会主义制度的最大优势。", "tip": "【记忆提示】最本质特征 = 党的领导（选择题高频考点）" },
+                { "id": "DL-08", "front": "“五位一体”总体布局指的是什么？", "back": "经济建设、政治建设、文化建设、社会建设、生态文明建设五位一体。", "tip": "【记忆提示】五位一体 = 经济+政治+文化+社会+生态文明" },
+                { "id": "DL-09", "front": "“四个全面”战略布局指的是什么？", "back": "全面建设社会主义现代化国家、全面深化改革、全面依法治国、全面从严治党。", "tip": "【记忆提示】四个全面：注意第一个“全面建设社会主义现代化国家”是十九大后更新的表述" },
+                { "id": "DL-10", "front": "新时代我国社会主要矛盾是什么？", "back": "人民日益增长的美好生活需要和不平衡不充分的发展之间的矛盾。", "tip": "【记忆提示】关键词：美好生活需要 + 不平衡不充分" },
+                { "id": "DL-11", "front": "中国特色社会主义进入新时代的标志是什么？", "back": "党的十九大（2017年）指出，经过长期努力，中国特色社会主义进入了新时代，这是我国发展新的历史方位。", "tip": "【记忆提示】新时代 = 党的十九大提出，历史性判断" },
+                { "id": "DL-12", "front": "“两个一百年”奋斗目标分别是什么？", "back": "到中国共产党成立100年时全面建成小康社会；到新中国成立100年时全面建成社会主义现代化强国。", "tip": "【记忆提示】两个一百年：建党100年=全面小康（已实现），建国100年=现代化强国" },
+                { "id": "DL-13", "front": "全面建成社会主义现代化强国“两步走”战略安排是什么？", "back": "从2020年到2035年基本实现社会主义现代化；从2035年到本世纪中叶建成富强民主文明和谐美丽的社会主义现代化强国。", "tip": "【记忆提示】两步走：2020-2035基本现代化，2035-本世纪中叶现代化强国" },
+                { "id": "DL-14", "front": "“六个必须坚持”指的是什么？", "back": "必须坚持人民至上、必须坚持自信自立、必须坚持守正创新、必须坚持问题导向、必须坚持系统观念、必须坚持胸怀天下。", "tip": "【记忆提示】六个必须坚持 = 人民至上+自信自立+守正创新+问题导向+系统观念+胸怀天下" },
+                { "id": "DL-15", "front": "“四个自信”指的是什么？", "back": "道路自信、理论自信、制度自信、文化自信。", "tip": "【记忆提示】四个自信 = 道路+理论+制度+文化" },
+                { "id": "DL-16", "front": "“两个维护”指的是什么？", "back": "坚决维护习近平总书记党中央的核心、全党的核心地位；坚决维护党中央权威和集中统一领导。", "tip": "【记忆提示】两个维护 = 维护习近平总书记核心地位 + 维护党中央权威" },
+                { "id": "DL-17", "front": "“四个意识”指的是什么？", "back": "政治意识、大局意识、核心意识、看齐意识。", "tip": "【记忆提示】四个意识 = 政治+大局+核心+看齐" },
+                { "id": "DL-18", "front": "新发展理念指的是什么？", "back": "创新、协调、绿色、开放、共享。创新是引领发展的第一动力。", "tip": "【记忆提示】新发展理念 = 创新协调绿色开放共享（口诀：创协绿开共）" },
+                { "id": "DL-19", "front": "“双碳”目标指的是什么？", "back": "碳达峰、碳中和。中国承诺二氧化碳排放力争2030年前达到峰值，2060年前实现碳中和。", "tip": "【记忆提示】双碳 = 2030碳达峰，2060碳中和" },
+                { "id": "DL-20", "front": "习近平生态文明思想的核心要义是什么？", "back": "“绿水青山就是金山银山”。人与自然是生命共同体，要像保护眼睛一样保护生态环境。", "tip": "【记忆提示】生态文明核心理念 = 绿水青山就是金山银山" }
+            ],
+            "ch1": [
+                { "id": "CH1-01", "front": "中国特色社会主义是党和人民历经千辛万苦、付出巨大代价取得的什么？", "back": "根本成就。关键词是“根本成就”，不是“重要成就”或“主要成就”。", "tip": "【记忆提示】根本成就 = 根本性地位" },
+                { "id": "CH1-02", "front": "道路问题是关系党的事业兴衰成败什么的问题？", "back": "第一位的问题。注意“第一位”的表述，这是教材的标准用语。", "tip": "【记忆提示】道路问题 = 第一位" },
+                { "id": "CH1-03", "front": "中国特色社会主义的本质属性是什么？", "back": "科学社会主义。中国特色社会主义是社会主义而不是其他什么主义。", "tip": "【记忆提示】本质属性 = 科学社会主义" },
+                { "id": "CH1-04", "front": "“三个只有”的内容是什么？", "back": "只有社会主义才能救中国，只有社会主义才能发展中国，只有坚持和发展中国特色社会主义才能实现中华民族伟大复兴。", "tip": "【记忆提示】三个只有：救中国→发展中国→实现伟大复兴" },
+                { "id": "CH1-05", "front": "中国特色社会主义是近代以来中国社会发展的什么？", "back": "必然选择。强调不是偶然的，而是历史发展规律决定的客观趋势。", "tip": "【记忆提示】必然选择 = 历史必然性" },
+                { "id": "CH1-06", "front": "一个国家实行什么样的主义，关键要看能否解决什么？", "back": "历史性课题。不是“基本问题”或“主要矛盾”。", "tip": "【记忆提示】历史性课题 = 争取民族独立、人民解放和实现国家富强、人民幸福" },
+                { "id": "CH1-07", "front": "毛泽东同志提出经过什么走向社会主义的正确理论？", "back": "新民主主义革命。通过新民主主义革命再走向社会主义。", "tip": "【记忆提示】新民主主义 → 社会主义" },
+                { "id": "CH1-08", "front": "邓小平同志作出把党和国家工作中心转移到什么上来的决策？", "back": "经济建设。这是党的十一届三中全会做出的重大决策，是改革开放的起点。", "tip": "【记忆提示】工作中心 = 经济建设" },
+                { "id": "CH1-09", "front": "谁成功开创了中国特色社会主义？", "back": "邓小平。江泽民“推向21世纪”，胡锦涛“坚持和发展”，习近平“开创新时代”。", "tip": "【记忆提示】开创者 = 邓小平" },
+                { "id": "CH1-10", "front": "中国特色社会主义是在改革开放多少年的伟大实践中得来的？", "back": "40多年。还要注意其他来源：新中国成立70多年、党的百年实践、近代180多年、世界社会主义500多年、中华文明5000多年。", "tip": "【记忆提示】六个来源：40→70→100→180→500→5000" },
+                { "id": "CH1-11", "front": "中国特色社会主义是科学社会主义什么和中国社会发展历史逻辑的辩证统一？", "back": "理论逻辑。科学社会主义理论逻辑 + 中国社会发展历史逻辑。", "tip": "【记忆提示】理论逻辑 + 历史逻辑" },
+                { "id": "CH1-12", "front": "中国特色社会主义既坚持了科学社会主义基本原则，又赋予其鲜明的什么？", "back": "中国特色。双重属性：坚持基本原则 + 中国特色。", "tip": "【记忆提示】中国特色 = 马克思主义中国化的创造性发展" },
+                { "id": "CH1-13", "front": "改革开放以来取得一切成绩和进步的根本原因归结起来是什么？", "back": "开辟了中国特色社会主义道路，形成了中国特色社会主义理论体系，确立了中国特色社会主义制度，发展了中国特色社会主义文化。", "tip": "【记忆提示】四个归结：道路+理论体系+制度+文化" },
+                { "id": "CH1-14", "front": "道路、理论体系、制度、文化四个方面的定位分别是什么？", "back": "道路是实现途径，理论体系是行动指南，制度是根本保障，文化是精神力量。", "tip": "【记忆提示】途径→指南→保障→力量" },
+                { "id": "CH1-15", "front": "坚定道路自信就是坚信中国特色社会主义道路是什么的必由之路？", "back": "我国实现社会主义现代化、创造人民美好生活的必由之路，是实现中华民族伟大复兴的必由之路。", "tip": "【记忆提示】必由之路 = 唯一性、必然性" },
+                { "id": "CH1-16", "front": "“四个自信”来源于什么？", "back": "来源于实践、来源于人民、来源于真理。", "tip": "【记忆提示】三个来源：实践+人民+真理" },
+                { "id": "CH1-17", "front": "当代中国的伟大社会变革不是简单延续我国历史文化的什么？", "back": "母版。还要注意：不是经典作家设想的模板、不是其他国家实践的再版、不是国外现代化的翻版。", "tip": "【记忆提示】四个版：母版→模板→再版→翻版" },
+                { "id": "CH1-18", "front": "中国特色社会主义进入新时代，我国社会主要矛盾发生了什么变化？", "back": "转化为人民日益增长的美好生活需要和不平衡不充分的发展之间的矛盾。", "tip": "【记忆提示】新矛盾：美好生活需要 + 不平衡不充分发展" },
+                { "id": "CH1-19", "front": "社会主要矛盾变化后，哪两个没有变？", "back": "我国仍处于并将长期处于社会主义初级阶段的基本国情没有变，我国是世界最大发展中国家的国际地位没有变。", "tip": "【记忆提示】两个没有变：初级阶段 + 最大发展中国家" },
+                { "id": "CH1-20", "front": "中国特色社会主义新时代的五个\"是\"分别从哪五个维度揭示新时代内涵？", "back": "继续夺取胜利（方向）、全面建设强国（目标）、实现共同富裕（民生）、实现中国梦（民族复兴）、为人类作贡献（国际）。", "tip": "【记忆提示】五个是：方向→目标→民生→复兴→贡献" }
+            ],
+            "ch2": [
+                { "id": "CH2-01", "front": "中国梦是何时首次提出的？", "back": "2012年11月，习近平参观《复兴之路》展览时首次提出。", "tip": "【记忆提示】2012年11月 = 党的十八大刚刚闭幕" },
+                { "id": "CH2-02", "front": "中国梦的本质是什么？", "back": "国家富强、民族振兴、人民幸福。", "tip": "【记忆提示】国·民·人 = 富强·振兴·幸福" },
+                { "id": "CH2-03", "front": "中国共产党百年奋斗归结起来的一个主题是什么？", "back": "实现中华民族伟大复兴。", "tip": "【记忆提示】百年奋斗 = 一个主题 = 民族复兴" },
+                { "id": "CH2-04", "front": "四个历史时期对应的四次伟大飞跃是什么？", "back": "①新民主主义→封建专制向人民民主；②社会主义革命建设→迈进社会主义社会；③改革开放→站起来到富起来；④新时代→富起来到强起来。", "tip": "【记忆提示】四时期四飞跃：站起来→富起来→强起来" },
+                { "id": "CH2-05", "front": "改革开放之初提出的现代化发展战略是什么？", "back": "「三步走」：解决温饱→实现小康→基本实现现代化。", "tip": "【记忆提示】三步走 = 温饱→小康→基本现代化" },
+                { "id": "CH2-06", "front": "「小康」和「全面」分别强调什么？", "back": "「小康」讲发展水平，「全面」讲发展的平衡性、协调性、可持续性。", "tip": "【记忆提示】小康=水平，全面=平衡协调可持续" },
+                { "id": "CH2-07", "front": "2021年7月1日宣告的历史性成就是什么？", "back": "全面建成小康社会，历史性地解决了绝对贫困问题。", "tip": "【记忆提示】2021年7月1日 = 建党百年 = 全面小康" },
+                { "id": "CH2-08", "front": "我国国内生产总值稳居世界第几大经济体？", "back": "第二大经济体（仅次于美国）。", "tip": "【记忆提示】第二大经济体 ≠ 第一大" },
+                { "id": "CH2-09", "front": "打赢脱贫攻坚战使近多少人摆脱贫困？", "back": "近1亿人（9899万农村贫困人口全部脱贫）。", "tip": "【记忆提示】近1亿 = 人类减贫史上最大奇迹" },
+                { "id": "CH2-10", "front": "党的二十大「两步走」战略安排是什么？", "back": "第一步：2020—2035年，基本实现社会主义现代化；第二步：2035年—本世纪中叶，建成社会主义现代化强国。", "tip": "【记忆提示】两步走：2035基本现代化→本世纪中叶强国" },
+                { "id": "CH2-11", "front": "到2035年，我国人均GDP将达到什么水平？", "back": "达到中等发达国家水平。", "tip": "【记忆提示】中等发达国家 ≠ 发达国家" },
+                { "id": "CH2-12", "front": "本世纪中叶建成的社会主义现代化强国完整表述？", "back": "富强民主文明和谐美丽的社会主义现代化强国（五个维度）。", "tip": "【记忆提示】富强·民主·文明·和谐·美丽 = 五位一体对应" },
+                { "id": "CH2-13", "front": "「四个现代化」是哪四个？", "back": "现代农业、现代工业、现代国防、现代科学技术。", "tip": "【记忆提示】农·工·国防·科技 = 四个现代化" },
+                { "id": "CH2-14", "front": "孙中山《建国方略》未能成功说明了什么？", "back": "没有代表中国人民根本利益的先进政治力量领导，现代化蓝图无法变为现实。", "tip": "【记忆提示】先进政治力量领导 = 实现现代化的关键前提" },
+                { "id": "CH2-15", "front": "全面建成社会主义现代化强国「两步走」把基本现代化时间提前了多少年？", "back": "提前了15年（原定21世纪中叶，现提前到2035年）。", "tip": "【记忆提示】提前15年 = 体现中国的道路自信" },
+                { "id": "CH2-16", "front": "我国脱贫攻坚战提前多少年实现联合国2030年减贫目标？", "back": "提前10年实现。", "tip": "【记忆提示】提前10年 = 中国对全球减贫贡献率超70%" },
+                { "id": "CH2-17", "front": "到本世纪中叶，我国哪五大文明将全面提升？", "back": "物质文明、政治文明、精神文明、社会文明、生态文明。", "tip": "【记忆提示】五大文明 = 五位一体总体布局的对应成果" },
+                { "id": "CH2-18", "front": "全面建成小康社会后，中华民族伟大复兴迈出了什么？", "back": "新的一大步。", "tip": "【记忆提示】全面小康 = 民族复兴的关键一步" },
+                { "id": "CH2-19", "front": "中国式现代化是中国共产党领导的什么？", "back": "中国式现代化是强国建设、民族复兴的唯一正确道路。", "tip": "【记忆提示】唯一正确道路 ≠ 之一" },
+                { "id": "CH2-20", "front": "到2035年基本实现社会主义现代化，要进入什么前列？", "back": "进入创新型国家前列。", "tip": "【记忆提示】2035 = 创新型国家前列；本世纪中叶 = 综合国力和国际影响力领先" }
+            ],
+            "ch3": [
+                { "id": "CH3-01", "front": "中国特色社会主义最本质的特征是什么？", "back": "中国共产党领导。", "tip": "【记忆提示】最本质特征 = 党的领导（单选题高频）" },
+                { "id": "CH3-02", "front": "中国特色社会主义制度的最大优势是什么？", "back": "中国共产党领导。", "tip": "【记忆提示】最本质特征 = 最大优势 = 都是党的领导" },
+                { "id": "CH3-03", "front": "中国最大的国情是什么？", "back": "中国共产党的领导。习近平：「一定要认清，中国最大的国情就是中国共产党的领导。这就是中国特色。」", "tip": "【记忆提示】最大国情 = 党的领导" },
+                { "id": "CH3-04", "front": "在国家治理体系中具有统领地位的制度是什么？", "back": "党的领导制度（我国的根本领导制度）。", "tip": "【记忆提示】统领地位 = 党的领导制度" },
+                { "id": "CH3-05", "front": "在当代中国，最高的政治领导力量是什么？", "back": "中国共产党。「党政军民学，东西南北中，党是领导一切的。」", "tip": "【记忆提示】最高政治领导力量 = 中国共产党" },
+                { "id": "CH3-06", "front": "党的领导的最高原则是什么？", "back": "党中央集中统一领导。", "tip": "【记忆提示】最高原则 = 党中央集中统一领导" },
+                { "id": "CH3-07", "front": "党的领导制度体系主要涵盖几个方面的制度？", "back": "六个方面：①不忘初心牢记使命；②维护党中央权威和集中统一领导；③党的全面领导；④为人民执政靠人民执政；⑤提高执政能力和领导水平；⑥全面从严治党。", "tip": "【记忆提示】六个制度 = 党的领导制度体系" },
+                { "id": "CH3-08", "front": "马克思主义政党第一位的能力是什么？", "back": "政治领导力。", "tip": "【记忆提示】第一位能力 = 政治领导力" },
+                { "id": "CH3-09", "front": "维护党中央权威和集中统一领导，最关键的是什么？", "back": "坚决维护习近平同志党中央的核心、全党的核心地位（「两个维护」之一）。", "tip": "【记忆提示】最关键 = 维护习近平总书记核心地位" },
+                { "id": "CH3-10", "front": "党的领导是全面的，体现在哪四个方面？", "back": "①领导对象上，领导一切组织；②领导内容上，领导各方面建设；③领导过程上，贯穿各项工作；④领导方式上，多种方式实施。", "tip": "【记忆提示】全面 = 对象·内容·过程·方式 都全面" },
+                { "id": "CH3-11", "front": "民主集中制「四个服从」的核心是什么？", "back": "全党各个组织和全体党员服从党的全国代表大会和中央委员会（全党服从中央）。", "tip": "【记忆提示】四个服从，核心是全党服从中央" },
+                { "id": "CH3-12", "front": "党的领导制度体系中，主体内容是什么制度？", "back": "健全党的全面领导制度。", "tip": "【记忆提示】主体内容 = 党的全面领导制度" },
+                { "id": "CH3-13", "front": "中国共产党的自身优势与中国特色社会主义制度优势的关系？", "back": "党的自身优势是中国特色社会主义制度优势的主要来源。", "tip": "【记忆提示】党的优势 → 制度优势的来源" },
+                { "id": "CH3-14", "front": "「众星捧月」的比喻中，「月」指的是什么？", "back": "中国共产党。党总揽全局、协调各方的领导核心作用。", "tip": "【记忆提示】众星捧月，月 = 党" },
+                { "id": "CH3-15", "front": "在国家治理体系的大棋局中，党中央被比喻为什么？", "back": "坐镇中军帐的「帅」。", "tip": "【记忆提示】大棋局，党中央 = 帅" },
+                { "id": "CH3-16", "front": "维护党中央权威和集中统一领导，对象是谁？", "back": "对象是党中央，而不是其他任何组织。", "tip": "【记忆提示】维护对象 = 党中央（不是地方党委）" },
+                { "id": "CH3-17", "front": "坚持和加强党的全面领导，使党的哪「四力」显著增强？", "back": "政治领导力、思想引领力、群众组织力、社会号召力。", "tip": "【记忆提示】四力 = 政治·思想·群众·社会" },
+                { "id": "CH3-18", "front": "党中央决策议事协调机构的重点是什么？", "back": "谋大事、议大事、抓大事。", "tip": "【记忆提示】决策议事协调机构 = 抓大事" },
+                { "id": "CH3-19", "front": "坚持党的全面领导，必须依靠什么来保障？", "back": "制度。党的领导制度是我国的根本领导制度。", "tip": "【记忆提示】靠制度保障 = 党的领导制度" },
+                { "id": "CH3-20", "front": "中国共产党领导关系中国特色社会主义的什么？", "back": "关系中国特色社会主义的性质、方向和命运。", "tip": "【记忆提示】性质 + 方向 + 命运" }
+            ]
+        };
+
+        function showPage(pageId) {
+            var pages = document.querySelectorAll('.page');
+            for (var i = 0; i < pages.length; i++) {
+                pages[i].classList.remove('active');
+            }
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function goHome() {
+            // 移除所有章节主题类
+            document.body.className = document.body.className.replace(/ch-\w+/g, '').trim();
+            showPage('home-page');
+        }
+
+        function goToModePage(chapter) {
+            currentChapter = chapter;
+            // 移除所有章节主题类
+            document.body.className = document.body.className.replace(/ch-\w+/g, '').trim();
+            // 添加当前章节主题类
+            document.body.classList.add('ch-' + chapter);
+            // 根据章节ID显示正确的名称
+            var chapterNames = {
+                'dalun': '导论',
+                'ch1': '第一章 新时代坚持和发展中国特色社会主义',
+                'ch2': '第二章 以中国式现代化全面推进中华民族伟大复兴',
+                'ch3': '第三章 坚持党的全面领导',
+                'ch4': '第四章 坚持以人民为中心',
+                'ch5': '第五章 全面深化改革开放',
+                'ch6': '第六章 推动高质量发展',
+                'ch7': '第七章 社会主义现代化建设的教育、科技、人才战略',
+                'ch8': '第八章 发展全过程人民民主'
+            };
+            var title = chapterNames[chapter] || '未知章节';
+            document.getElementById('mode-page-title').textContent = title;
+            showPage('mode-page');
+        }
+
+        function goModePage() { showPage('mode-page'); }
+
+        // 卡片模式
+        function startCardMode() {
+            if (chapterData[currentChapter]) {
+                cards = chapterData[currentChapter];
+                currentCardIndex = 0;
+                loadProgress();
+                showPage('card-page');
+                displayCard('next');
+            }
+        }
+
+        // 错题本模式
+        function startWrongMode() {
+            if (chapterData[currentChapter]) {
+                loadProgress();
+                cards = chapterData[currentChapter].filter(function(card) {
+                    return reviewCards.indexOf(card.id) !== -1;
+                });
+                if (cards.length === 0) {
+                    alert('还没有标记"需复习"的卡片，快去学习吧！');
+                    return;
+                }
+                currentCardIndex = 0;
+                showPage('wrong-page');
+                displayWrongCard('next');
+            }
+        }
+
+        // 显示卡片（带动画）
+        function displayCard(direction) {
+            if (cards.length === 0) return;
+            var card = cards[currentCardIndex];
+            var flashcard = document.getElementById('flashcard');
+            flashcard.classList.remove('flipped');
+            
+            // 添加进入动画
+            if (direction) {
+                flashcard.style.animation = direction === 'next' ? 'enterRight 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards' : 'enterLeft 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards';
+                setTimeout(function() { flashcard.style.animation = ''; }, 350);
+            }
+            
+            document.getElementById('card-front-text').textContent = card.front;
+            document.getElementById('card-back-text').textContent = card.back;
+            document.getElementById('card-tip').textContent = card.tip || '';
+            updateProgress();
+        }
+
+        // 显示错题卡片
+        function displayWrongCard(direction) {
+            if (cards.length === 0) return;
+            var card = cards[currentCardIndex];
+            var flashcard = document.getElementById('wrong-flashcard');
+            flashcard.classList.remove('flipped');
+            
+            if (direction) {
+                flashcard.style.animation = direction === 'next' ? 'enterRight 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards' : 'enterLeft 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards';
+                setTimeout(function() { flashcard.style.animation = ''; }, 350);
+            }
+            
+            document.getElementById('wrong-front-text').textContent = card.front;
+            document.getElementById('wrong-back-text').textContent = card.back;
+            document.getElementById('wrong-tip').textContent = card.tip || '';
+            updateWrongProgress();
+        }
+
+        // 翻转卡片
+        function flipCard() {
+            document.getElementById('flashcard').classList.toggle('flipped');
+        }
+        function flipWrongCard() {
+            document.getElementById('wrong-flashcard').classList.toggle('flipped');
+        }
+
+        // 标记卡片
+        function markCard(status) {
+            var cardId = cards[currentCardIndex].id;
+            if (status === 'mastered') {
+                if (masteredCards.indexOf(cardId) === -1) masteredCards.push(cardId);
+                reviewCards = reviewCards.filter(function(id) { return id !== cardId; });
+            } else if (status === 'review') {
+                if (reviewCards.indexOf(cardId) === -1) reviewCards.push(cardId);
+            }
+            saveProgress();
+            nextCard();
+        }
+
+        // 标记错题卡片
+        function markWrongCard(status) {
+            var cardId = cards[currentCardIndex].id;
+            if (status === 'mastered') {
+                if (masteredCards.indexOf(cardId) === -1) masteredCards.push(cardId);
+                reviewCards = reviewCards.filter(function(id) { return id !== cardId; });
+                // 从错题本中移除
+                cards = cards.filter(function(card) { return card.id !== cardId; });
+                if (cards.length === 0) {
+                    alert('恭喜！错题本已清空！');
+                    goModePage();
+                    return;
+                }
+                if (currentCardIndex >= cards.length) currentCardIndex = cards.length - 1;
+            } else if (status === 'review') {
+                if (reviewCards.indexOf(cardId) === -1) reviewCards.push(cardId);
+            }
+            saveProgress();
+            nextWrongCard();
+        }
+
+        // 上一题
+        function prevCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                displayCard('prev');
+            }
+        }
+        function prevWrongCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                displayWrongCard('prev');
+            }
+        }
+
+        // 下一题
+        function nextCard() {
+            if (currentCardIndex < cards.length - 1) {
+                currentCardIndex++;
+                displayCard('next');
+            } else {
+                alert('已经是最后一题了！');
+            }
+        }
+        function nextWrongCard() {
+            if (currentCardIndex < cards.length - 1) {
+                currentCardIndex++;
+                displayWrongCard('next');
+            } else {
+                alert('已经是最后一题了！');
+            }
+        }
+
+        // 更新进度
+        function updateProgress() {
+            var total = cards.length;
+            var mastered = masteredCards.length;
+            var pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
+            document.getElementById('card-progress').style.width = pct + '%';
+            document.getElementById('card-progress-text').textContent = mastered + ' / ' + total;
+        }
+        function updateWrongProgress() {
+            var total = cards.length;
+            document.getElementById('wrong-progress').style.width = '0%';
+            document.getElementById('wrong-progress-text').textContent = (currentCardIndex + 1) + ' / ' + total;
+        }
+
+        // 保存进度
+        function saveProgress() {
+            var key = 'progress_' + currentChapter;
+            localStorage.setItem(key, JSON.stringify({
+                mastered: masteredCards,
+                review: reviewCards,
+                lastIndex: currentCardIndex
+            }));
+        }
+
+        // 加载进度
+        function loadProgress() {
+            var key = 'progress_' + currentChapter;
+            var saved = localStorage.getItem(key);
+            if (saved) {
+                var data = JSON.parse(saved);
+                masteredCards = data.mastered || [];
+                reviewCards = data.review || [];
+                currentCardIndex = data.lastIndex || 0;
+            }
+        }
+
+        // 背诵模式
+        function startReciteMode() {
+            var reciteTexts = {
+                'dalun': '# 导论　背诵资料\n\n' +
+                    '## 一、创立背景\n\n' +
+                    '· 世界百年未有之大变局**加速演进**\n' +
+                    '· 中华民族伟大复兴进入**关键时期**\n' +
+                    '· 党面临**长期执政**的新考验\n' +
+                    '· 新时代中国特色社会主义伟大实践全面推进\n' +
+                    '· 科学社会主义在21世纪的中国焕发**新的蓬勃生机**\n\n' +
+                    '## 二、核心内容\n\n' +
+                    '· **十个明确**是理论层面的核心要义\n' +
+                    '· **十四个坚持**是实践层面的基本方略\n' +
+                    '· **十三个方面成就**是实践成果层面的总结\n' +
+                    '· 十个明确回答：新时代坚持和发展**什么样的**中国特色社会主义\n' +
+                    '· 十四个坚持回答：新时代**怎样**坚持和发展中国特色社会主义\n\n' +
+                    '## 三、两个结合\n\n' +
+                    '· 把马克思主义基本原理同**中国具体实际**相结合\n' +
+                    '· 把马克思主义基本原理同**中华优秀传统文化**相结合\n' +
+                    '· **两个结合**是推进马克思主义中国化时代化的根本途径\n\n' +
+                    '## 四、历史地位\n\n' +
+                    '· 当代中国**马克思主义**\n' +
+                    '· 二十一世纪**马克思主义**\n' +
+                    '· 中华文化和中国精神的**时代精华**\n' +
+                    '· 实现了马克思主义中国化时代化**新的飞跃**\n' +
+                    '· 是全党全国人民为实现中华民族伟大复兴而奋斗的**行动指南**\n\n' +
+                    '## 五、世界观和方法论\n\n' +
+                    '· **六个必须坚持**是习近平新时代中国特色社会主义思想的世界观和方法论\n' +
+                    '· 必须坚持**人民至上**\n' +
+                    '· 必须坚持**自信自立**\n' +
+                    '· 必须坚持**守正创新**\n' +
+                    '· 必须坚持**问题导向**\n' +
+                    '· 必须坚持**系统观念**\n' +
+                    '· 必须坚持**胸怀天下**\n\n' +
+                    '## 六、中国特色社会主义\n\n' +
+                    '· **中国共产党的领导**是中国特色社会主义最本质的特征\n' +
+                    '· 中国特色社会主义制度的**最大优势**是党的领导\n' +
+                    '· **四个自信**：道路自信、理论自信、制度自信、文化自信\n' +
+                    '· **五位一体**总体布局：经济、政治、文化、社会、生态文明建设\n' +
+                    '· **四个全面**战略布局：全面建设社会主义现代化国家、全面深化改革、全面依法治国、全面从严治党\n\n' +
+                    '## 七、新时代\n\n' +
+                    '· 中国特色社会主义进入**新时代**是党的十九大的重大政治判断\n' +
+                    '· 新时代是**承前启后、继往开来**的时代\n' +
+                    '· 我国社会主要矛盾已经转化为：**人民日益增长的美好生活需要和不平衡不充分的发展之间的矛盾**\n' +
+                    '· 新时代是全体中华儿女**勠力同心、奋力实现中华民族伟大复兴**的时代\n\n' +
+                    '## 八、奋斗目标\n\n' +
+                    '· **两个一百年**奋斗目标\n' +
+                    '· 到**中国共产党成立100年**时全面建成小康社会（**已实现**）\n' +
+                    '· 到**新中国成立100年**时全面建成社会主义现代化强国\n' +
+                    '· 全面建成社会主义现代化强国分**两步走**\n' +
+                    '· 第一步：2020—2035年，**基本实现**社会主义现代化\n' +
+                    '· 第二步：2035年—本世纪中叶，建成**富强民主文明和谐美丽**的社会主义现代化强国\n\n' +
+                    '## 九、两个维护和两个确立\n\n' +
+                    '· **两个确立**：确立习近平同志党中央的核心、全党的核心地位；确立习近平新时代中国特色社会主义思想的指导地位\n' +
+                    '· **两个维护**：坚决维护习近平总书记党中央的核心、全党的核心地位；坚决维护党中央权威和集中统一领导\n' +
+                    '· **四个意识**：政治意识、大局意识、核心意识、看齐意识\n\n' +
+                    '## 十、新发展理念\n\n' +
+                    '· **创新、协调、绿色、开放、共享**的新发展理念\n' +
+                    '· **创新**是引领发展的第一动力\n' +
+                    '· **协调**是持续健康发展的内在要求\n' +
+                    '· **绿色**是永续发展的必要条件\n' +
+                    '· **开放**是国家繁荣发展的必由之路\n' +
+                    '· **共享**是中国特色社会主义的本质要求\n\n' +
+                    '## 十一、双碳目标\n\n' +
+                    '· **碳达峰**：二氧化碳排放力争2030年前达到峰值\n' +
+                    '· **碳中和**：力争2060年前实现碳中和\n' +
+                    '· **绿水青山就是金山银山**是习近平生态文明思想的核心理念\n\n' +
+                    '## 十二、一带一路\n\n' +
+                    '· **一带一路**全称：丝绸之路经济带和21世纪海上丝绸之路\n' +
+                    '· 核心是**五通**：政策沟通、设施联通、贸易畅通、资金融通、民心相通\n' +
+                    '· 推动构建**人类命运共同体**是习近平外交思想的核心理念',
+                'ch1': '# 第一章　新时代坚持和发展中国特色社会主义　背诵资料\n\n' +
+                    '## 一、中国特色社会主义的根本成就\n\n' +
+                    '· 中国特色社会主义是党和人民历经千辛万苦、付出巨大代价取得的**根本成就**\n' +
+                    '· 不是“重要成就”、“主要成就”，而是**根本成就**（根基性地位）\n\n' +
+                    '## 二、道路问题的极端重要性\n\n' +
+                    '· 道路问题是关系党的事业兴衰成败**第一位**的问题\n' +
+                    '· 道路决定命运，方向决定道路，道路决定命运\n\n' +
+                    '## 三、中国特色社会主义的本质属性\n\n' +
+                    '· 中国特色社会主义的本质属性是**科学社会主义**\n' +
+                    '· 中国特色社会主义是**社会主义**而不是其他什么主义\n\n' +
+                    '## 四、三个“只有”\n\n' +
+                    '· 只有**社会主义**才能救中国\n' +
+                    '· 只有**社会主义**才能发展中国\n' +
+                    '· 只有**坚持和发展中国特色社会主义**才能实现中华民族伟大复兴\n' +
+                    '· 三个“只有”构成递进关系：救中国→发展中国→实现伟大复兴\n\n' +
+                    '## 五、必然选择\n\n' +
+                    '· 中国特色社会主义是近代以来中国社会发展的**必然选择**\n' +
+                    '· 是**历史和人民的选择**\n' +
+                    '· “必然选择”强调不是偶然的，而是历史发展规律决定的客观趋势\n\n' +
+                    '## 六、历史性课题\n\n' +
+                    '· 一个国家实行什么样的主义，关键要看能否解决**历史性课题**\n' +
+                    '· 1840年以来中国人民面临的历史性课题：争取民族独立、人民解放和实现国家富强、人民幸福\n\n' +
+                    '## 七、中国共产党人的历史贡献\n\n' +
+                    '· **毛泽东**：提出经过**新民主主义革命**走向社会主义的正确理论\n' +
+                    '· **邓小平**：把党和国家工作中心转移到**经济建设**上来，开创中国特色社会主义\n' +
+                    '· **江泽民**：成功把中国特色社会主义推向**21世纪**\n' +
+                    '· **胡锦涛**：成功在新形势下**坚持和发展**了中国特色社会主义\n' +
+                    '· **习近平**：开创了中国特色社会主义**新时代**\n\n' +
+                    '## 八、中国特色社会主义的六个来源\n\n' +
+                    '· 改革开放**40多年**的伟大实践\n' +
+                    '· 新中国成立**70多年**的持续探索\n' +
+                    '· 中国共产党领导人民进行伟大社会革命**100多年**的实践\n' +
+                    '· 近代以来中华民族由衰到盛**180多年**的历史进程\n' +
+                    '· 世界社会主义**500多年**波澜壮阔的发展历程\n' +
+                    '· 中华文明**5000多年**的传承发展\n\n' +
+                    '## 九、理论逻辑和历史逻辑的辩证统一\n\n' +
+                    '· 中国特色社会主义是科学社会主义**理论逻辑**和中国社会发展**历史逻辑**的辩证统一\n' +
+                    '· 科学社会主义理论逻辑：马克思主义关于社会主义的科学理论和基本原则\n' +
+                    '· 中国社会发展历史逻辑：中国近代以来社会发展的客观进程和必然趋势\n\n' +
+                    '## 十、四个方面的定位\n\n' +
+                    '· **道路**是实现途径\n' +
+                    '· **理论体系**是行动指南\n' +
+                    '· **制度**是根本保障\n' +
+                    '· **文化**是精神力量\n' +
+                    '· 四者统一于中国特色社会主义伟大实践\n\n' +
+                    '## 十一、四个自信的来源\n\n' +
+                    '· 来源于**实践**\n' +
+                    '· 来源于**人民**\n' +
+                    '· 来源于**真理**\n' +
+                    '· 来源于实践：中国特色社会主义是实践中得来的\n' +
+                    '· 来源于人民：凝聚了人民的智慧和力量\n' +
+                    '· 来源于真理：马克思主义深刻揭示了社会主义必然代替资本主义的客观规律\n\n' +
+                    '## 十二、当代中国的伟大社会变革的“四个版”\n\n' +
+                    '· 不是简单延续我国历史文化的**母版**\n' +
+                    '· 不是简单套用马克思主义经典作家设想的**模板**\n' +
+                    '· 不是其他国家社会主义实践的**再版**\n' +
+                    '· 也不是国外现代化发展的**翻版**\n' +
+                    '· 强调中国特色社会主义是**原创性**的伟大创造\n\n' +
+                    '## 十三、中国特色社会主义进入新时代\n\n' +
+                    '· 标志：党的**十九大**（2017年）\n' +
+                    '· 我国社会主要矛盾转化：**人民日益增长的美好生活需要和不平衡不充分的发展之间的矛盾**\n' +
+                    '· 社会主要矛盾变化后，“**两个没有变**”：\n' +
+                    '  - 我国仍处于并将长期处于社会主义初级阶段的基本国情没有变\n' +
+                    '  - 我国是世界最大发展中国家的国际地位没有变'
+                    ,
+                'ch2': '# 第二章　以中国式现代化全面推进中华民族伟大复兴　背诵资料\n\n' +
+                    '## 一、中国梦\n\n' +
+                    '· 2012年11月，习近平参观《**复兴之路**》展览时首次提出**中国梦**\n' +
+                    '· 中国梦的本质：**国家富强、民族振兴、人民幸福**\n' +
+                    '· 中国梦是国家的梦、民族的梦，也是每一个**中国人的梦**\n\n' +
+                    '## 二、百年奋斗主题\n\n' +
+                    '· 中国共产党百年奋斗归结为一个主题：**实现中华民族伟大复兴**\n' +
+                    '· 四个历史时期对应**四次伟大飞跃**：\n' +
+                    '  - 新民主主义革命→从封建专制向人民民主的飞跃\n' +
+                    '  - 社会主义革命和建设→迈进社会主义社会的飞跃\n' +
+                    '  - 改革开放→从站起来到富起来的飞跃\n' +
+                    '  - 新时代→从富起来到强起来的飞跃\n\n' +
+                    '## 三、现代化战略安排\n\n' +
+                    '· 改革开放之初：**"三步走"**发展战略（温饱→小康→基本现代化）\n' +
+                    '· 2021年7月1日：宣告**全面建成小康社会**，历史性解决绝对贫困问题\n' +
+                    '· 党的二十大：**"两步走"**战略安排：\n' +
+                    '  - 2020—2035年：**基本实现**社会主义现代化\n' +
+                    '  - 2035年—本世纪中叶：建成**社会主义现代化强国**\n' +
+                    '· 2035年目标：人均GDP达到**中等发达国家水平**\n' +
+                    '· 本世纪中叶目标：**富强民主文明和谐美丽**的社会主义现代化强国\n\n' +
+                    '## 四、脱贫攻坚\n\n' +
+                    '· 打赢脱贫攻坚战使近**1亿人**摆脱贫困\n' +
+                    '· 提前**10年**实现联合国2030年可持续发展议程减贫目标\n' +
+                    '· 9899万农村贫困人口全部脱贫，832个贫困县全部摘帽\n\n' +
+                    '## 五、中国式现代化\n\n' +
+                    '· 中国式现代化是**强国建设、民族复兴**的唯一正确道路\n' +
+                    '· 到本世纪中叶，五大文明全面提升：**物质、政治、精神、社会、生态文明**\n' +
+                    '· 全面建成社会主义现代化强国"两步走"把基本现代化时间**提前15年**',
+                'ch3': '# 第三章　坚持党的全面领导　背诵资料\n\n' +
+                    '## 一、党的领导的定位\n\n' +
+                    '· 中国特色社会主义**最本质的特征**：中国共产党领导\n' +
+                    '· 中国特色社会主义制度**最大优势**：中国共产党领导\n' +
+                    '· 中国**最大的国情**：中国共产党的领导\n' +
+                    '· **最高政治领导力量**：中国共产党\n\n' +
+                    '## 二、党的领导制度\n\n' +
+                    '· 党的领导制度是我国的**根本领导制度**\n' +
+                    '· 在国家制度体系中具有**统领地位**\n' +
+                    '· 党的领导制度体系六个方面：\n' +
+                    '  - 建立不忘初心、牢记使命的制度\n' +
+                    '  - 完善坚定维护党中央权威和集中统一领导的各项制度\n' +
+                    '  - 健全党的全面领导制度（**主体内容**）\n' +
+                    '  - 健全为人民执政、靠人民执政各项制度\n' +
+                    '  - 健全提高党的执政能力和领导水平制度\n' +
+                    '  - 完善全面从严治党制度\n\n' +
+                    '## 三、党的领导的最高原则\n\n' +
+                    '· **党中央集中统一领导**是党的领导的最高原则\n' +
+                    '· 维护党中央权威和集中统一领导，最关键的是**坚决维护习近平同志党中央的核心、全党的核心地位**\n' +
+                    '· 维护党中央权威和集中统一领导，对象是**党中央**而不是其他任何组织\n\n' +
+                    '## 四、民主集中制\n\n' +
+                    '· **"四个服从"**：党员个人服从组织、少数服从多数、下级服从上级、全党服从中央\n' +
+                    '· 核心是：**全党各个组织和全体党员服从党的全国代表大会和中央委员会**\n\n' +
+                    '## 五、党的"四力"\n\n' +
+                    '· **政治领导力**（马克思主义政党第一位的能力）\n' +
+                    '· **思想引领力**\n' +
+                    '· **群众组织力**\n' +
+                    '· **社会号召力**\n\n' +
+                    '## 六、重要比喻\n\n' +
+                    '· **"众星捧月"**："月"指的是中国共产党\n' +
+                    '· **"大棋局"**：党中央是坐镇中军帐的"帅"\n' +
+                    '· 党的领导是**全面的、系统的、整体的**，贯穿治国理政方方面面'
+            };
+            
+            var text = reciteTexts[currentChapter];
+            if (!text) {
+                text = '# ' + currentChapter + '　背诵资料\n\n加载中...';
+            }
+            
+            displayReciteText(text);
+            showPage('recite-page');
+        }
+
+        function displayReciteText(markdownText) {
+            var container = document.getElementById('recite-container');
+            var html = markdownText
+                .replace(/^# (.+)$/gm, '<h2>$1</h2>')
+                .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^· (.+)$/gm, '<div class="recite-item">$1</div>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            container.innerHTML = html;
+        }
+        
+        // 页面加载完成后初始化二进制数据流
+        window.onload = function() { initBinaryRain(); };
+    </script>
+</body>
+</html>
