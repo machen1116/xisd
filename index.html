@@ -567,6 +567,47 @@
             .mode-list { display: flex; gap: 15px; }
             .mode-card { flex: 1; }
         }
+        /* 烟花动画 */
+        .fireworks-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .firework-particle {
+            position: absolute;
+            border-radius: 50%;
+            animation: fireworkBurst 1.2s ease-out forwards;
+        }
+        @keyframes fireworkBurst {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+        }
+        .congrats-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(0,0,0,0.85);
+            color: white;
+            padding: 30px 50px;
+            border-radius: 20px;
+            font-size: 24px;
+            font-weight: 600;
+            z-index: 10000;
+            pointer-events: none;
+            animation: congratsPop 2.5s ease-out forwards;
+            text-align: center;
+            line-height: 1.6;
+        }
+        @keyframes congratsPop {
+            0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            15% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+            25% { transform: translate(-50%, -50%) scale(1); }
+            75% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -1436,8 +1477,8 @@
                 // 从错题本中移除
                 cards = cards.filter(function(card) { return card.id !== cardId; });
                 if (cards.length === 0) {
-                    alert('恭喜！错题本已清空！');
-                    goModePage();
+                    launchFireworks('错题本已清空！太棒了！🎉');
+                    setTimeout(function() { goModePage(); }, 2500);
                     return;
                 }
                 if (currentCardIndex >= cards.length) currentCardIndex = cards.length - 1;
@@ -1487,11 +1528,52 @@
             var pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
             document.getElementById('card-progress').style.width = pct + '%';
             document.getElementById('card-progress-text').textContent = '已掌握 ' + mastered + ' / ' + total;
+            // 全部掌握时触发烟花
+            if (mastered === total && total > 0) {
+                setTimeout(function() { launchFireworks('本章全部掌握！🎉'); }, 300);
+            }
         }
         function updateWrongProgress() {
             var total = cards.length;
             document.getElementById('wrong-progress').style.width = '0%';
             document.getElementById('wrong-progress-text').textContent = (currentCardIndex + 1) + ' / ' + total;
+        }
+
+        // 烟花动画
+        function launchFireworks(msg) {
+            var overlay = document.getElementById('fireworksOverlay');
+            overlay.innerHTML = '';
+            var colors = ['#ff3b30','#ff9500','#ffcc00','#34c759','#007aff','#5856d6','#ff2d55','#64d2ff'];
+            // 放 5 轮烟花
+            for (var r = 0; r < 5; r++) {
+                (function(round) {
+                    setTimeout(function() {
+                        var cx = Math.random() * window.innerWidth;
+                        var cy = Math.random() * window.innerHeight * 0.6;
+                        for (var i = 0; i < 20; i++) {
+                            var p = document.createElement('div');
+                            p.className = 'firework-particle';
+                            var angle = (Math.PI * 2 / 20) * i;
+                            var dist = 80 + Math.random() * 100;
+                            var tx = Math.cos(angle) * dist;
+                            var ty = Math.sin(angle) * dist;
+                            p.style.cssText = 'left:' + cx + 'px;top:' + cy + 'px;width:8px;height:8px;background:' + colors[Math.floor(Math.random()*colors.length)] + ';--tx:' + tx + 'px;--ty:' + ty + 'px;';
+                            overlay.appendChild(p);
+                            setTimeout(function() { if (p.parentNode) p.parentNode.removeChild(p); }, 1200);
+                        }
+                    }, round * 400);
+                })(r);
+            }
+            // 显示恭喜弹窗
+            setTimeout(function() {
+                var toast = document.createElement('div');
+                toast.className = 'congrats-toast';
+                toast.textContent = msg || '全部掌握！🎉';
+                document.body.appendChild(toast);
+                setTimeout(function() { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 2500);
+            }, 600);
+            // 清空烟花粒子
+            setTimeout(function() { overlay.innerHTML = ''; }, 3000);
         }
 
         // 保存进度
@@ -2147,5 +2229,9 @@
         // 页面加载完成后初始化二进制数据流
         window.onload = function() { initBinaryRain(); };
     </script>
+
+    <!-- 烟花动画容器 -->
+    <div class="fireworks-overlay" id="fireworksOverlay"></div>
+
 </body>
 </html>
