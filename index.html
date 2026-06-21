@@ -1483,18 +1483,15 @@
         // 更新进度
         function updateProgress() {
             var total = cards.length;
-            var current = currentCardIndex + 1;
             var mastered = masteredCards.length;
-            var pct = total > 0 ? Math.round((current / total) * 100) : 0;
+            var pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
             document.getElementById('card-progress').style.width = pct + '%';
-            document.getElementById('card-progress-text').textContent = current + ' / ' + total + '（已掌握 ' + mastered + ' 张）';
+            document.getElementById('card-progress-text').textContent = '已掌握 ' + mastered + ' / ' + total;
         }
         function updateWrongProgress() {
             var total = cards.length;
-            var current = currentCardIndex + 1;
-            var pct = total > 0 ? Math.round((current / total) * 100) : 0;
-            document.getElementById('wrong-progress').style.width = pct + '%';
-            document.getElementById('wrong-progress-text').textContent = current + ' / ' + total;
+            document.getElementById('wrong-progress').style.width = '0%';
+            document.getElementById('wrong-progress-text').textContent = (currentCardIndex + 1) + ' / ' + total;
         }
 
         // 保存进度
