@@ -1,0 +1,20 @@
+# WorkBuddy 工作目录
+.workbuddy/
+
+# 生成脚本（临时工具）
+generate_*.py
+ch2_ch3_cards.js
+chapter1_cards.js
+
+# 生成的临时文件
+generated_*.json
+generated_*.txt
+
+# 测试文件
+test-card.html
+
+# 二维码图片（如非必要）
+qrcode_*.png
+
+# macOS 系统文件
+.DS_Store
