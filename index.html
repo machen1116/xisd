@@ -839,7 +839,7 @@
             </div>
             <div class="card-nav">
                 <button class="nav-btn" onclick="prevCard()">‹ 上一题</button>
-                <button class="nav-btn" onclick="nextCard()">下一题 ›</button>
+                <button class="nav-btn" id="next-btn" onclick="nextCard()">下一题 ›</button>
             </div>
         </div>
     </div>
@@ -1421,6 +1421,16 @@
             document.getElementById('card-back-text').textContent = card.back;
             document.getElementById('card-tip').textContent = card.tip || '';
             updateProgress();
+            
+            // 更新下一题按钮文本
+            var nextBtn = document.getElementById('next-btn');
+            if (currentCardIndex >= cards.length - 1) {
+                nextBtn.textContent = '完成 🎉';
+                nextBtn.style.background = 'linear-gradient(135deg, #34c759, #30d158)';
+            } else {
+                nextBtn.textContent = '下一题 ›';
+                nextBtn.style.background = '';
+            }
         }
 
         // 显示错题卡片
@@ -1509,7 +1519,11 @@
                 currentCardIndex++;
                 displayCard('next');
             } else {
-                alert('已经是最后一题了！');
+                // 已经是最后一题，显示完成提示
+                var chapterName = chapterNames[currentChapter] || currentChapter;
+                if (confirm('🎉 本章卡片已全部浏览完毕！\n\n点击"确定"返回模式选择页，或点击"取消"继续复习。')) {
+                    goModePage();
+                }
             }
         }
         function nextWrongCard() {
