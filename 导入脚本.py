@@ -1,64 +1,118 @@
 #!/usr/bin/env python3
 """
-考点 Excel → index.html 导入脚本（支持复习/学习双模式）
+考点 Excel → index.html 导入脚本（3列格式，支持模式选择）
 使用方法：
-  1. 填写"考点导入模板.xlsx"（注意「模式」列）
-  2. 运行本脚本：python3 导入脚本.py
-  3. 脚本根据「模式」列自动写入对应数据集
+  1. Excel 格式：章节 | 正面 | 反面（前三列，列名任意）
+  2. 运行：python3 导入脚本.py
+  3. 选择导入模式：重点复习 / 学习模式
   4. 可反复运行，每次只追加新内容（自动去重）
 
-模式列填写说明：
-  - 填「复习」或留空 → 写入复习模式数据（已有内容）
-  - 填「学习」→ 写入学习模式数据（后续新增内容）
+命令行参数：
+  python3 导入脚本.py --mode review   # 直接导入到重点复习
+  python3 导入脚本.py --mode study    # 直接导入到学习模式
+  python3 导入脚本.py --file 其他文件.xlsx  # 指定 Excel 文件
 """
 
 import openpyxl
 import re
 import sys
-import json
+import os
+import argparse
+import json as json_mod
 
 EXCEL_FILE = "考点导入模板.xlsx"
 HTML_FILE = "index.html"
 
 MODE_MAP = {
+    "重点复习": "review",
+    "学习模式": "study",
     "复习": "review",
     "学习": "study",
     "review": "review",
     "study": "study",
 }
 
+VAR_MAP = {
+    "review": "chapterData",
+    "study": "studyData",
+}
 
-def load_excel(path):
-    """读取 Excel，按模式分组返回 {mode_key: {章节: [cards...]}}"""
+
+def load_excel_3col(path):
+    """
+    读取 Excel 前三列，格式：章节 | 正面 | 反面
+    列名任意，只取前三列
+    返回：{chapter: [cards...]}
+    """
     wb = openpyxl.load_workbook(path)
     ws = wb.active
-    data = {}  # {mode_key: {chapter: [cards]}}
+    data = {}  # {chapter: [cards]}
     errors = []
+    count = 0
 
     for row_idx, row in enumerate(ws.iter_rows(min_row=2, values_only=True), start=2):
-        chapter, mode, qtype, front, back = row[0], row[1], row[2], row[3], row[4]
+        chapter = row[0]
+        front = row[1]
+        back = row[2]
+
         if not chapter or not front or not back:
             continue
+
         chapter = str(chapter).strip()
-        mode = str(mode).strip() if mode else "复习"
         front = str(front).strip()
         back = str(back).strip()
 
-        mode_key = MODE_MAP.get(mode, "review")
-        card = {"front": front, "back": back}
-        data.setdefault(mode_key, {}).setdefault(chapter, []).append(card)
+        if not front or not back:
+            continue
 
+        card = {"front": front, "back": back}
+        data.setdefault(chapter, []).append(card)
+        count += 1
+
+    print(f"  📊 共读取 {count} 张卡片，涉及 {len(data)} 个章节")
     return data, errors
+
+
+def choose_mode():
+    """让用户选择导入模式"""
+    print("\n请选择导入目标模式：")
+    print("  1) 重点复习（考前复习重点，对应已有内容）")
+    print("  2) 学习模式（详细学习，对应后续新增内容）")
+    print("  3) 退出")
+
+    while True:
+        choice = input("请输入数字 (1/2/3): ").strip()
+        if choice == "1":
+            return "review"
+        elif choice == "2":
+            return "study"
+        elif choice == "3":
+            print("已取消导入")
+            sys.exit(0)
+        else:
+            print("请输入 1、2 或 3")
+
+
+def build_name_to_key_map(html):
+    """
+    从 HTML 中解析章节显示名 → key 的映射。
+    匹配：<div class="chapter-card ch-XXX" onclick="goToModePage('key')"> ... <h3>显示名</h3>
+    """
+    # 正则：捕获 class 里的 ch-KEY，onclick 里的 key，以及 <h3> 里的显示名
+    pattern = r'class="chapter-card ch-(\w+)"[^>]*onclick="goToModePage\(\'(\w+)\'\)"[\s\S]*?<h3>(.*?)</h3>'
+    matches = re.findall(pattern, html)
+    mapping = {}
+    for (ch_class, key, display_name) in matches:
+        display_name = display_name.strip()
+        mapping[display_name] = key
+    return mapping
 
 
 def parse_js_var(html, var_name):
     """
-    从 HTML 中解析 JS 变量（对象形式）。
+    从 HTML 中解析 JS 变量（对象形式），用 JSON 解析。
     返回解析到的 dict，解析失败返回 {}。
     """
-    # 匹配 var xxx = { ... };
-    pattern = r"var\s+" + re.escape(var_name) + r"\s*=\s*\{(.*?)\}\s*;"
-    # 但上面非贪婪匹配会过早结束，改用：找到变量起始，然后手工解析大括号
     marker = f"var {var_name} = "
     idx = html.find(marker)
     if idx == -1:
@@ -102,30 +156,17 @@ def parse_js_var(html, var_name):
     if end is None:
         return {}
 
-    js_block = html[start+1:end].strip()  # 去掉外层 {}
-    # 现在解析每个章节键
-    chapters = {}
-    # 用正则找 "chapterKey": [ ... ]
-    # 章节键可能是 "dalun" 或 "ch1" 等
-    ch_pattern = r'"(\w+)"\s*:\s*\[(.*?)\]'
-    for m in re.finditer(ch_pattern, js_block, re.DOTALL):
-        ch_key = m.group(1)
-        cards_str = m.group(2)
-        cards = []
-        # 解析每张卡片
-        for cm in re.finditer(r'\{\s*"id"\s*:\s*"[^"]*",\s*"front"\s*:\s*"((?:[^"\\]|\\.)*)",\s*"back"\s*:\s*"((?:[^"\\]|\\.)*)"(?:\s*,\s*"tip"\s*:\s*"((?:[^"\\]|\\.)*)")?\s*\}', cards_str, re.DOTALL):
-            f = cm.group(1).replace('\\"', '"').replace('\\\\', '\\')
-            b = cm.group(2).replace('\\"', '"').replace('\\\\', '\\')
-            tip = cm.group(4)
-            if tip:
-                tip = tip.replace('\\"', '"').replace('\\\\', '\\')
-            card = {"front": f, "back": b}
-            if tip:
-                card["tip"] = tip
-            cards.append(card)
-        chapters[ch_key] = cards
-
-    return chapters
+    js_block = html[start:end+1]  # 包含 {}
+    # 去掉尾逗号（JSON 不允许）
+    cleaned = re.sub(r',\s*([}\]])', r'\1', js_block)
+    # 现在是有效的 JSON，用 json.loads() 解析
+    try:
+        data = json_mod.loads(cleaned)
+        return data
+    except json_mod.JSONDecodeError as e:
+        print(f"  ⚠️ JSON 解析失败：{e}")
+        # fallback: 返回空 dict
+        return {}
 
 
 def merge_data(existing, new_cards_by_chapter):
@@ -152,7 +193,6 @@ def build_chapterdata_js(data, var_name):
     lines.append(f"        var {var_name} = {{")
     chapters = list(data.items())
     for i, (ch_key, cards) in enumerate(chapters):
-        # 找章节显示名
         lines.append(f'            "{ch_key}": [')
         for card in cards:
             front_escaped = card["front"].replace('\\', '\\\\').replace('"', '\\"')
@@ -176,7 +216,6 @@ def replace_js_var_in_html(html, var_name, new_js_block):
     marker = f"var {var_name} = "
     idx = html.find(marker)
     if idx == -1:
-        # 变量不存在，需要插入（追加到 </script> 前）
         return html.replace("</script>", new_js_block + "\n    </script>", 1)
 
     start = idx + len(marker)
@@ -224,8 +263,20 @@ def replace_js_var_in_html(html, var_name, new_js_block):
 
 
 def main():
-    print(f"📖 读取 {EXCEL_FILE} ...")
-    new_data, errors = load_excel(EXCEL_FILE)
+    parser = argparse.ArgumentParser(description="考点 Excel → index.html 导入脚本")
+    parser.add_argument("--mode", choices=["review", "study"], help="导入模式：review=重点复习，study=学习模式")
+    parser.add_argument("--file", default=EXCEL_FILE, help=f"Excel 文件名（默认：{EXCEL_FILE}）")
+    args = parser.parse_args()
+
+    excel_file = args.file
+
+    # 检查 Excel 文件是否存在
+    if not os.path.exists(excel_file):
+        print(f"❌ 找不到 {excel_file}，请把 Excel 文件放在同一目录下")
+        sys.exit(1)
+
+    print(f"📖 读取 {excel_file}（3列格式：章节 | 正面 | 反面）...")
+    new_data, errors = load_excel_3col(excel_file)
 
     if errors:
         print("⚠️  发现以下问题：")
@@ -236,54 +287,68 @@ def main():
         print("❌ Excel 中没有有效数据，请检查填写内容")
         sys.exit(1)
 
-    total_added = 0
-    total_review = 0
-    total_study = 0
-
-    print(f"\n📝 读取 {HTML_FILE} 中已有内容 ...")
+    # 读取 HTML（用于解析映射表和已有数据）
+    print(f"\n📝 读取 {HTML_FILE} ...")
     with open(HTML_FILE, "r", encoding="utf-8") as f:
         html = f.read()
 
-    # 处理复习模式
-    if "review" in new_data:
-        print("\n🔵 处理【复习模式】数据 ...")
-        existing_review = parse_js_var(html, "chapterData")
-        if existing_review:
-            print(f"  ✅ 已找到现有复习数据：{len(existing_review)} 个章节")
-        merged_review, added = merge_data(existing_review, new_data["review"])
-        total_added += added
-        total_review = added
-        print(f"  ➕ 复习模式新增 {added} 张卡片")
-        # 写回 HTML
-        new_review_js = build_chapterdata_js(merged_review, "chapterData")
-        html = replace_js_var_in_html(html, "chapterData", new_review_js)
-        print(f"  ✅ 复习模式数据已更新（共 {len(merged_review)} 个章节）")
+    # 解析映射表：显示名 → key
+    name_to_key = build_name_to_key_map(html)
+    print(f"  📋 找到 {len(name_to_key)} 个章节映射")
 
-    # 处理学习模式
-    if "study" in new_data:
-        print("\n🟦 处理【学习模式】数据 ...")
-        existing_study = parse_js_var(html, "studyData")
-        if existing_study:
-            print(f"  ✅ 已找到现有学习数据：{len(existing_study)} 个章节")
-        merged_study, added = merge_data(existing_study, new_data["study"])
-        total_added += added
-        total_study = added
-        print(f"  ➕ 学习模式新增 {added} 张卡片")
-        # 写回 HTML
-        new_study_js = build_chapterdata_js(merged_study, "studyData")
-        html = replace_js_var_in_html(html, "studyData", new_study_js)
-        print(f"  ✅ 学习模式数据已更新（共 {len(merged_study)} 个章节）")
+    # 把 Excel 里的显示名转换成 key
+    new_data_key = {}
+    for display_name, cards in new_data.items():
+        if display_name in name_to_key:
+            key = name_to_key[display_name]
+            new_data_key[key] = cards
+        else:
+            print(f"  ⚠️  警告：章节「{display_name}」在网页中找不到对应，已跳过")
 
-    # 写回文件
+    if not new_data_key:
+        print("❌ 没有有效章节可导入，请检查 Excel 中的章节名称是否准确")
+        sys.exit(1)
+
+    new_data = new_data_key
+
+    # 选择模式（命令行参数 或 交互选择）
+    if args.mode:
+        mode = args.mode
+        print(f"📌 命令行指定模式：{mode}")
+    else:
+        mode = choose_mode()
+
+    var_name = VAR_MAP[mode]
+    mode_label = "重点复习" if mode == "review" else "学习模式"
+
+    # 读取已有数据
+    existing = parse_js_var(html, var_name)
+    if existing:
+        print(f"  ✅ 已找到现有【{mode_label}】数据：{len(existing)} 个章节")
+    else:
+        print(f"  ℹ️  未找到现有【{mode_label}】数据，将新建")
+
+    # 合并数据
+    merged, added = merge_data(existing, new_data)
+    print(f"  ➕ 新增 {added} 张卡片（已去重）")
+
+    if added == 0:
+        print("  ℹ️  没有新内容需要导入")
+        sys.exit(0)
+
+    # 写回 HTML
+    new_js = build_chapterdata_js(merged, var_name)
+    html = replace_js_var_in_html(html, var_name, new_js)
+
     print(f"\n💾 写入 {HTML_FILE} ...")
     with open(HTML_FILE, "w", encoding="utf-8") as f:
         f.write(html)
 
     print(f"\n✅ 导入完成！")
-    print(f"   复习模式新增：{total_review} 张")
-    print(f"   学习模式新增：{total_study} 张")
-    print(f"   共计新增：{total_added} 张")
+    print(f"   模式：{mode_label}")
+    print(f"   新增：{added} 张")
     print(f"   请刷新浏览器查看效果")
+    print(f"   在线版：https://machen1116.github.io/xisd/")
 
 
 if __name__ == "__main__":
