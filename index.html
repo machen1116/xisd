@@ -625,7 +625,7 @@
             <p class="subtitle">习近平新时代中国特色社会主义思想概论</p>
             <div class="mode-toggle-container">
                 <div class="mode-toggle">
-                    <button class="mode-toggle-btn active" id="btn-review-mode" onclick="switchDataMode('review')">🔴 复习模式</button>
+                    <button class="mode-toggle-btn active" id="btn-review-mode" onclick="switchDataMode('review')">🔴 重点复习</button>
                     <button class="mode-toggle-btn" id="btn-study-mode" onclick="switchDataMode('study')">🔵 学习模式</button>
                 </div>
             </div>
@@ -925,7 +925,7 @@
         }
         
         var currentChapter = '';
-        var currentDataMode = 'review';  // 'review' = 复习模式, 'study' = 学习模式
+        var currentDataMode = 'review';  // 'review' = 重点复习, 'study' = 学习模式
         var cards = [];
         var currentCardIndex = 0;
         var cardIsFlipped = false;
@@ -960,7 +960,7 @@
         
         // 刷新首页章节卡片的模式标签
         function updateChapterListBadges() {
-            // 复习模式：显示已有卡片数
+            // 重点复习：显示已有卡片数
             // 学习模式：显示"学习模式"标签，无内容时显示"暂无内容"
             var modeName = currentDataMode === 'review' ? '复习' : '学习';
             var modeClass = currentDataMode === 'review' ? 'review' : 'study';
