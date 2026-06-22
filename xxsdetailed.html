@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>习新思想记忆卡片</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f2f2f7;
+            color: #1d1d1f;
+            line-height: 1.6;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            transition: background 0.5s ease;
+        }
+        
+        /* 各章节主题背景 */
+        body.ch-dalun {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f2f2f7 50%, #e8eaf6 100%);
+        }
+        body.ch-ch1 {
+            background: linear-gradient(135deg, #e8f5e9 0%, #f2f2f7 50%, #f1f8e9 100%);
+        }
+        body.ch-ch2 {
+            background: linear-gradient(135deg, #f3e5f5 0%, #f2f2f7 50%, #ede7f6 100%);
+        }
+        body.ch-ch3 {
+            background: linear-gradient(135deg, #fff3e0 0%, #f2f2f7 50%, #fbe9e7 100%);
+        }
+        body.ch-ch4 {
+            background: linear-gradient(135deg, #ffebee 0%, #f2f2f7 50%, #fce4ec 100%);
+        }
+        body.ch-ch5 {
+            background: linear-gradient(135deg, #e8eaf6 0%, #f2f2f7 50%, #c5cae9 100%);
+        }
+        
+        .page { display: none; min-height: 100vh; padding-bottom: 100px; }
+        .page.active { display: block; }
+        
+        /* iOS 风格头部 */
+        .header {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            color: #1d1d1f;
+            padding: 50px 20px 20px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 0.5px solid rgba(0,0,0,0.1);
+        }
+        
+        .header h1 { font-size: 22px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+        .header h2 { font-size: 18px; font-weight: 600; margin-bottom: 12px; }
+        .subtitle { font-size: 13px; color: #86868b; }
+        
+        /* 首页科技感头部背景 */
+        #home-page .header {
+            position: relative;
+            padding: 60px 20px 40px;
+            overflow: hidden;
+            border-bottom: none;
+            color: white;
+        }
+        #home-page .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #003a8c 0%, #007aff 50%, #5856d6 100%);
+            z-index: -2;
+        }
+        /* 网格线装饰 */
+        #home-page .header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            opacity: 0.12;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.15) 1px, transparent 1px);
+            background-size: 30px 30px;
+            animation: gridMove 4s linear infinite;
+        }
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(30px, 30px); }
+        }
+        /* 二进制数据流 */
+        .binary-rain {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        .binary-column {
+            position: absolute;
+            top: -100%;
+            font-size: 13px;
+            line-height: 18px;
+            color: rgba(120, 200, 255, 0.25);
+            white-space: pre;
+            animation: fall linear infinite;
+            writing-mode: vertical-lr;
+            letter-spacing: 4px;
+        }
+        @keyframes fall {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(300%) translateX(-10px); opacity: 0; }
+        }
+        
+        #home-page .header h1 {
+            font-size: 24px;
+            color: white;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            margin-bottom: 8px;
+        }
+        #home-page .header .subtitle {
+            font-size: 14px;
+            color: rgba(255,255,255,0.85);
+        }
+        
+        .back-btn {
+            position: absolute;
+            left: 20px;
+            top: 50px;
+            background: rgba(0,122,255,0.1);
+            border: none;
+            color: #007aff;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        
+        /* 进度条 iOS 风格 */
+        .progress-wrap { padding: 0 20px; margin-top: 12px; }
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(0,0,0,0.08);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #007aff, #5856d6);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border-radius: 2px;
+        }
+        .progress-text { font-size: 11px; color: #86868b; margin-top: 6px; }
+        
+        /* 磨砂玻璃卡片 */
+        .chapter-list { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .chapter-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-radius: 16px;
+            padding: 20px 20px 20px 28px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border: 0.5px solid rgba(255,255,255,0.5);
+            position: relative;
+            overflow: hidden;
+        }
+        /* iOS 风格左边竖条 */
+        .chapter-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 60%;
+            border-radius: 0 3px 3px 0;
+            background: #007aff;
+            transition: height 0.2s ease;
+        }
+        .chapter-card:active { transform: scale(0.98); background: rgba(255,255,255,0.9); }
+        .chapter-card:active::before { height: 75%; }
+        /* 悬浮动画效果 */
+        .chapter-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 16px 40px rgba(0,0,0,0.04);
+        }
+        /* 各章节竖条颜色 */
+        .chapter-card.ch-dalun::before { background: #007aff; }
+        .chapter-card.ch-ch1::before { background: #34c759; }
+        .chapter-card.ch-ch2::before { background: #af52de; }
+        .chapter-card.ch-ch3::before { background: #ff9500; }
+        .chapter-card.ch-ch4::before { background: #ff3b30; }
+        .chapter-card.ch-ch5::before { background: #5856d6; }
+        .chapter-card.ch-ch6::before { background: #00c7be; }
+        .chapter-card.ch-ch7::before { background: #ff2d55; }
+        .chapter-card.ch-ch8::before { background: #64d2ff; }
+        .chapter-icon { font-size: 32px; margin-right: 15px; }
+        .chapter-info { flex: 1; }
+        .chapter-info h3 { font-size: 17px; font-weight: 600; margin-bottom: 4px; color: #1d1d1f; }
+        .chapter-info p { font-size: 13px; color: #86868b; }
+        .chapter-arrow { font-size: 20px; color: #c7c7cc; }
+        
+        /* 模式选择 */
+        .mode-list { padding: 20px; max-width: 800px; margin: 0 auto; }
+        .mode-card {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-radius: 16px;
+            padding: 28px 20px;
+            margin-bottom: 12px;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            border: 0.5px solid rgba(255,255,255,0.5);
+        }
+        .mode-card:active { transform: scale(0.98); background: rgba(255,255,255,0.9); }
+        .mode-icon { font-size: 44px; margin-bottom: 12px; }
+        .mode-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; color: #1d1d1f; }
+        .mode-card p { font-size: 14px; color: #86868b; margin-bottom: 4px; }
+        .mode-desc { font-size: 12px; color: #aeaeb2; }
+        
+        /* 卡片模式 - 磨砂玻璃 */
+        .card-container {
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .flashcard-wrap {
+            width: 100%;
+            max-width: 400px;
+            height: 380px;
+            perspective: 1200px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+        
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+            cursor: pointer;
+            will-change: transform;
+        }
+        
+        .card-front, .card-back {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 20px;
+            display: table;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
+        }
+
+        .card-inner {
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+            padding: 24px 20px;
+            box-sizing: border-box;
+        }
+        
+        .card-front {
+            background: rgba(255,255,255,0.85);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 1px solid rgba(255,255,255,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+        /* 卡片正面左边竖条 - 章节主题色 */
+        .card-front::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 0%;
+            border-radius: 0 3px 3px 0;
+            transition: height 0.3s ease;
+        }
+        .flashcard-wrap:hover .card-front::before { height: 60%; }
+        .flashcard-wrap .card-front::before { height: 60%; }
+        /* 各章节卡片正面竖条颜色 */
+        body.ch-dalun .card-front::before { background: #007aff; }
+        body.ch-ch1 .card-front::before { background: #34c759; }
+        body.ch-ch2 .card-front::before { background: #af52de; }
+        body.ch-ch3 .card-front::before { background: #ff9500; }
+        body.ch-ch4 .card-front::before { background: #ff3b30; }
+        body.ch-ch5 .card-front::before { background: #5856d6; }
+        body.ch-ch6 .card-front::before { background: #00c7be; }
+        body.ch-ch7 .card-front::before { background: #ff2d55; }
+        body.ch-ch8 .card-front::before { background: #64d2ff; }
+        .card-front p { font-size: 18px; color: #1d1d1f; line-height: 1.8; font-weight: 500; padding-left: 12px; }
+        
+        .card-back {
+            color: white;
+            transform: rotateY(180deg);
+            flex-direction: column;
+            /* 默认渐变（导论） */
+            background: linear-gradient(135deg, #007aff 0%, #5856d6 100%);
+        }
+        /* 各章节卡片背面渐变 */
+        body.ch-dalun .card-back { background: linear-gradient(135deg, #007aff 0%, #5856d6 100%); }
+        body.ch-ch9 {
+            background: linear-gradient(135deg, #8e8e93 0%, #f2f2f7 50%, #d1d1d6 100%);
+        }
+        .chapter-card.ch-ch9::before { background: #8e8e93; }
+        body.ch-ch9 .card-front::before { background: #8e8e93; }
+        body.ch-ch9 .card-back { background: linear-gradient(135deg, #8e8e93 0%, #a0a0a5 100%); }
+
+        body.ch-ch10 {
+            background: linear-gradient(135deg, #ff375f 0%, #f2f2f7 50%, #ff6482 100%);
+        }
+        .chapter-card.ch-ch10::before { background: #ff375f; }
+        body.ch-ch10 .card-front::before { background: #ff375f; }
+        body.ch-ch10 .card-back { background: linear-gradient(135deg, #ff375f 0%, #ff6a4d 100%); }
+
+        body.ch-ch11 {
+            background: linear-gradient(135deg, #ff9f0a 0%, #f2f2f7 50%, #ffb74d 100%);
+        }
+        .chapter-card.ch-ch11::before { background: #ff9f0a; }
+        body.ch-ch11 .card-front::before { background: #ff9f0a; }
+        body.ch-ch11 .card-back { background: linear-gradient(135deg, #ff9f0a 0%, #ffcc00 100%); }
+
+        body.ch-ch12 {
+            background: linear-gradient(135deg, #30d158 0%, #f2f2f7 50%, #34c759 100%);
+        }
+        .chapter-card.ch-ch12::before { background: #30d158; }
+        body.ch-ch12 .card-front::before { background: #30d158; }
+        body.ch-ch12 .card-back { background: linear-gradient(135deg, #30d158 0%, #34c759 100%); }
+
+        body.ch-ch13 {
+            background: linear-gradient(135deg, #8b0000 0%, #f2f2f7 50%, #a52a2a 100%);
+        }
+        .chapter-card.ch-ch13::before { background: #8b0000; }
+        body.ch-ch13 .card-front::before { background: #8b0000; }
+        body.ch-ch13 .card-back { background: linear-gradient(135deg, #8b0000 0%, #a52a2a 100%); }
+
+        body.ch-ch14 {
+            background: linear-gradient(135deg, #4a6741 0%, #f2f2f7 50%, #5a7a52 100%);
+        }
+        .chapter-card.ch-ch14::before { background: #4a6741; }
+        body.ch-ch14 .card-front::before { background: #4a6741; }
+        body.ch-ch14 .card-back { background: linear-gradient(135deg, #4a6741 0%, #5a7a52 100%); }
+
+        body.ch-ch15 {
+            background: linear-gradient(135deg, #ff3b30 0%, #f2f2f7 50%, #cc3a2e 100%);
+        }
+        .chapter-card.ch-ch15::before { background: #ff3b30; }
+        body.ch-ch15 .card-front::before { background: #ff3b30; }
+        body.ch-ch15 .card-back { background: linear-gradient(135deg, #ff3b30 0%, #cc3a2e 100%); }
+
+        body.ch-ch16 {
+            background: linear-gradient(135deg, #0071e3 0%, #f2f2f7 50%, #409cff 100%);
+        }
+        .chapter-card.ch-ch16::before { background: #0071e3; }
+        body.ch-ch16 .card-front::before { background: #0071e3; }
+        body.ch-ch16 .card-back { background: linear-gradient(135deg, #0071e3 0%, #409cff 100%); }
+
+        body.ch-ch17 {
+            background: linear-gradient(135deg, #8e8e93 0%, #f2f2f7 50%, #6d6d72 100%);
+        }
+        .chapter-card.ch-ch17::before { background: #8e8e93; }
+        body.ch-ch17 .card-front::before { background: #8e8e93; }
+        body.ch-ch17 .card-back { background: linear-gradient(135deg, #8e8e93 0%, #6d6d72 100%); }
+
+        body.ch-ch1 .card-back { background: linear-gradient(135deg, #ff3b30 0%, #ff6482 100%); }
+        body.ch-ch2 .card-back { background: linear-gradient(135deg, #af52de 0%, #bf5af2 100%); }
+        body.ch-ch3 .card-back { background: linear-gradient(135deg, #ff9500 0%, #ffd60a 100%); }
+        body.ch-ch4 .card-back { background: linear-gradient(135deg, #ff3b30 0%, #ff6482 100%); }
+        body.ch-ch5 .card-back { background: linear-gradient(135deg, #5856d6 0%, #64d2ff 100%); }
+        body.ch-ch6 .card-back { background: linear-gradient(135deg, #00c7be 0%, #30d158 100%); }
+        body.ch-ch7 .card-back { background: linear-gradient(135deg, #ff2d55 0%, #ff6a4d 100%); }
+        body.ch-ch8 .card-back { background: linear-gradient(135deg, #64d2ff 0%, #007aff 100%); }
+        .card-back p { font-size: 15px; line-height: 1.7; margin-bottom: 10px; overflow-wrap: break-word; }
+        .card-back .card-tip { font-size: 12px; opacity: 0.85; margin-top: 6px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.25); max-width: 100%; }
+        .card-tip {
+            font-size: 12px;
+            opacity: 0.85;
+            border-top: 1px solid rgba(255,255,255,0.25);
+            padding-top: 15px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        /* 卡片切换动画 */
+        .card-slide-left {
+            animation: slideLeft 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        .card-slide-right {
+            animation: slideRight 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        @keyframes slideLeft {
+            0% { opacity: 1; transform: translateX(0) rotateY(0); }
+            100% { opacity: 0; transform: translateX(-60px) rotateY(10deg); }
+        }
+        @keyframes slideRight {
+            0% { opacity: 1; transform: translateX(0) rotateY(0); }
+            100% { opacity: 0; transform: translateX(60px) rotateY(-10deg); }
+        }
+        .card-enter-left {
+            animation: enterLeft 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        .card-enter-right {
+            animation: enterRight 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+        }
+        @keyframes enterLeft {
+            0% { opacity: 0; transform: translateX(60px) rotateY(-10deg); }
+            100% { opacity: 1; transform: translateX(0) rotateY(0); }
+        }
+        @keyframes enterRight {
+            0% { opacity: 0; transform: translateX(-60px) rotateY(10deg); }
+            100% { opacity: 1; transform: translateX(0) rotateY(0); }
+        }
+        
+        /* 操作按钮 iOS 风格 */
+        .card-actions { display: flex; gap: 12px; margin-bottom: 25px; }
+        .action-btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+        .action-btn:active { transform: scale(0.95); }
+        .btn-review { background: #fff3e0; color: #ff9500; }
+        .btn-mastered { background: #e8f5e9; color: #34c759; }
+        .btn-flip { background: #e3f2fd; color: #007aff; }
+        .btn-flip:active { transform: scale(0.95); } 
+        .card-nav { display: flex; gap: 15px; }
+        .nav-btn {
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border: 0.5px solid rgba(0,0,0,0.06);
+            padding: 10px 22px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #007aff;
+            font-weight: 500;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .nav-btn:active { transform: scale(0.95); background: rgba(0,122,255,0.08); }
+        
+        /* 背诵模式 */
+        .recite-container {
+            margin: 20px;
+            background: rgba(255,255,255,0.75);
+            backdrop-filter: saturate(180%) blur(20px);
+            -webkit-backdrop-filter: saturate(180%) blur(20px);
+            border-radius: 16px;
+            padding: 24px 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+            border: 0.5px solid rgba(255,255,255,0.5);
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .recite-container h2 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 18px;
+            color: #1d1d1f;
+            border-bottom: 2px solid #007aff;
+            padding-bottom: 10px;
+            letter-spacing: -0.3px;
+        }
+        .recite-container h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 22px;
+            margin-bottom: 10px;
+            color: #007aff;
+        }
+        .recite-item {
+            line-height: 2.2;
+            font-size: 15px;
+            padding: 10px 0;
+            border-bottom: 0.5px solid #f2f2f7;
+            color: #1d1d1f;
+        }
+        .recite-item:last-child { border-bottom: none; }
+        strong { color: #007aff; font-weight: 600; }
+        
+        /* 错题本按钮 */
+        .wrong-btn {
+            background: rgba(255,59,48,0.08);
+            border: none;
+            color: #ff3b30;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+        .wrong-btn:active { transform: scale(0.95); background: rgba(255,59,48,0.15); }
+        
+        /* 底部 */
+        .footer {
+            text-align: center;
+            padding: 40px 20px 30px;
+            color: #aeaeb2;
+            font-size: 12px;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #aeaeb2;
+        }
+        .empty-state .empty-icon { font-size: 64px; margin-bottom: 15px; }
+        .empty-state p { font-size: 16px; }
+        
+        /* 响应式 */
+        @media (max-width: 480px) {
+            .flashcard-wrap { height: 280px; }
+            .card-front p { font-size: 16px; }
+            .card-back p { font-size: 14px; }
+            .action-btn { padding: 10px 22px; font-size: 14px; }
+        }
+        @media (min-width: 481px) and (max-width: 768px) {
+            .flashcard-wrap { max-width: 500px; height: 360px; }
+        }
+        @media (min-width: 769px) {
+            .flashcard-wrap { max-width: 550px; height: 380px; }
+            .mode-list { display: flex; gap: 15px; }
+            .mode-card { flex: 1; }
+        }
+
+    </style>
+    <!-- 数据文件 -->
+    <script src="data.js"></script>
+    <script src="recite.js"></script>
+</head>
+<body>
+
+    <!-- 首页 -->
+    <div id="home-page" class="page active">
+        <div class="header">
+            <div class="binary-rain" id="binaryRain"></div>
+            <h1>习新思想记忆卡片</h1>
+            <p class="subtitle">习近平新时代中国特色社会主义思想概论</p>
+        </div>
+        <div class="chapter-list">
+            <div class="chapter-card ch-dalun" onclick="goToModePage('dalun')">
+                <div class="chapter-icon">📕</div>
+                <div class="chapter-info">
+                    <h3>导论</h3>
+                    <p>习近平新时代中国特色社会主义思想概论·导论</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch1" onclick="goToModePage('ch1')">
+                <div class="chapter-icon">🌅</div>
+                <div class="chapter-info">
+                    <h3>第一章</h3>
+                    <p>新时代坚持和发展中国特色社会主义</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch2" onclick="goToModePage('ch2')">
+                <div class="chapter-icon">🚀</div>
+                <div class="chapter-info">
+                    <h3>第二章</h3>
+                    <p>以中国式现代化全面推进中华民族伟大复兴</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch3" onclick="goToModePage('ch3')">
+                <div class="chapter-icon">🎖️</div>
+                <div class="chapter-info">
+                    <h3>第三章</h3>
+                    <p>坚持党的全面领导</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch4" onclick="goToModePage('ch4')">
+                <div class="chapter-icon">❤️</div>
+                <div class="chapter-info">
+                    <h3>第四章</h3>
+                    <p>坚持以人民为中心</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch5" onclick="goToModePage('ch5')">
+                <div class="chapter-icon">🔄</div>
+                <div class="chapter-info">
+                    <h3>第五章</h3>
+                    <p>全面深化改革开放</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch6" onclick="goToModePage('ch6')">
+                <div class="chapter-icon">📈</div>
+                <div class="chapter-info">
+                    <h3>第六章</h3>
+                    <p>推动高质量发展</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch7" onclick="goToModePage('ch7')">
+                <div class="chapter-icon">🔬</div>
+                <div class="chapter-info">
+                    <h3>第七章</h3>
+                    <p>教育、科技、人才战略</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch8" onclick="goToModePage('ch8')">
+                <div class="chapter-icon">🗳️</div>
+                <div class="chapter-info">
+                    <h3>第八章</h3>
+                    <p>发展全过程人民民主</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch9" onclick="goToModePage('ch9')">
+                <div class="chapter-icon">⚖️</div>
+                <div class="chapter-info">
+                    <h3>第九章</h3>
+                    <p>全面依法治国</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch10" onclick="goToModePage('ch10')">
+                <div class="chapter-icon">🎨</div>
+                <div class="chapter-info">
+                    <h3>第十章</h3>
+                    <p>建设社会主义文化强国</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch11" onclick="goToModePage('ch11')">
+                <div class="chapter-icon">🏘️</div>
+                <div class="chapter-info">
+                    <h3>第十一章</h3>
+                    <p>加强社会建设</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch12" onclick="goToModePage('ch12')">
+                <div class="chapter-icon">🌿</div>
+                <div class="chapter-info">
+                    <h3>第十二章</h3>
+                    <p>建设社会主义生态文明</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch13" onclick="goToModePage('ch13')">
+                <div class="chapter-icon">🛡️</div>
+                <div class="chapter-info">
+                    <h3>第十三章</h3>
+                    <p>总体国家安全观</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch14" onclick="goToModePage('ch14')">
+                <div class="chapter-icon">🎖️</div>
+                <div class="chapter-info">
+                    <h3>第十四章</h3>
+                    <p>建设巩固国防和强大人民军队</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch15" onclick="goToModePage('ch15')">
+                <div class="chapter-icon">🇨🇳</div>
+                <div class="chapter-info">
+                    <h3>第十五章</h3>
+                    <p>一国两制和祖国统一</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch16" onclick="goToModePage('ch16')">
+                <div class="chapter-icon">🌐</div>
+                <div class="chapter-info">
+                    <h3>第十六章</h3>
+                    <p>中国特色大国外交</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+            <div class="chapter-card ch-ch17" onclick="goToModePage('ch17')">
+                <div class="chapter-icon">🔑</div>
+                <div class="chapter-info">
+                    <h3>第十七章</h3>
+                    <p>全面从严治党</p>
+                </div>
+                <div class="chapter-arrow">›</div>
+            </div>
+
+            </div>
+
+        <div class="footer">
+            <p>© 2026 马辰老师出品</p>
+            <p style="margin-top:8px;font-size:13px;color:#aeaeb2;">
+                👁 访问量：<img src="https://hits.sh/github.com/machen1116/xisd.svg" style="vertical-align:middle;" alt="访问量" />
+            </p>
+        </div>
+    </div>
+
+    <!-- 模式选择页 -->
+    <div id="mode-page" class="page">
+        <div class="header">
+            <button class="back-btn" onclick="goHome()">‹ 返回</button>
+            <h2 id="mode-page-title">选择学习模式</h2>
+        </div>
+        <div class="mode-list">
+            <div class="mode-card" onclick="startCardMode()">
+                <div class="mode-icon">🃏</div>
+                <h3>卡片模式</h3>
+                <p>翻转卡片，正面问题 → 点击看答案</p>
+                <p class="mode-desc">适合自测记忆效果</p>
+            </div>
+            <div class="mode-card" onclick="startReciteMode()">
+                <div class="mode-icon">📖</div>
+                <h3>背诵模式</h3>
+                <p>纯文字列表，一句一行，加粗关键词</p>
+                <p class="mode-desc">适合朗读、早读、快速过一遍</p>
+            </div>
+            <div class="mode-card" onclick="startWrongMode()">
+                <div class="mode-icon">📝</div>
+                <h3>错题本</h3>
+                <p>只复习标记"需复习"的卡片</p>
+                <p class="mode-desc">针对性强化薄弱环节</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 卡片模式页 -->
+    <div id="card-page" class="page">
+        <div class="header">
+            <button class="back-btn" onclick="goModePage()">‹ 返回</button>
+            <h2 id="card-page-title">🃏 卡片模式</h2>
+            <div class="progress-wrap">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="card-progress"></div>
+                </div>
+                <p class="progress-text" id="card-progress-text">0 / 0</p>
+            </div>
+        </div>
+        <div class="card-container">
+            <div class="flashcard-wrap" onclick="flipCard()">
+                <div class="flashcard" id="flashcard">
+                    <div class="card-front">
+                        <div class="card-inner">
+                            <p id="card-front-text">加载中...</p>
+                        </div>
+                    </div>
+                    <div class="card-back">
+                        <div class="card-inner">
+                            <p id="card-back-text"></p>
+                            <p class="card-tip" id="card-tip"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="action-btn btn-flip" onclick="flipCard()">🔄 翻转</button>
+                <button class="action-btn btn-review" onclick="event.stopPropagation(); markCard('review')">🔁 需复习</button>
+                <button class="action-btn btn-mastered" onclick="event.stopPropagation(); markCard('mastered')">✅ 已掌握</button>
+            </div>
+            <div class="card-nav">
+                <button class="nav-btn" onclick="prevCard()">‹ 上一题</button>
+                <button class="nav-btn" id="next-btn" onclick="nextCard()">下一题 ›</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 错题本页面 -->
+    <div id="wrong-page" class="page">
+        <div class="header">
+            <button class="back-btn" onclick="goModePage()">‹ 返回</button>
+            <h2>📝 错题本</h2>
+            <div class="progress-wrap">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="wrong-progress"></div>
+                </div>
+                <p class="progress-text" id="wrong-progress-text">0 / 0</p>
+            </div>
+        </div>
+        <div class="card-container">
+            <div class="flashcard-wrap" onclick="flipWrongCard()">
+                <div class="flashcard" id="wrong-flashcard">
+                    <div class="card-front">
+                        <p id="wrong-front-text">加载中...</p>
+                    </div>
+                    <div class="card-back">
+                        <p id="wrong-back-text"></p>
+                        <p class="card-tip" id="wrong-tip"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="card-actions">
+                <button class="action-btn btn-flip" onclick="flipWrongCard()">🔄 翻转</button>
+                <button class="action-btn btn-review" onclick="event.stopPropagation(); markWrongCard('review')">🔁 还需复习</button>
+                <button class="action-btn btn-mastered" onclick="event.stopPropagation(); markWrongCard('mastered')">✅ 已掌握</button>
+            </div>
+            <div class="card-nav">
+                <button class="nav-btn" onclick="prevWrongCard()">‹ 上一题</button>
+                <button class="nav-btn" onclick="nextWrongCard()">下一题 ›</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 背诵模式页 -->
+    <div id="recite-page" class="page">
+        <div class="header">
+            <button class="back-btn" onclick="goModePage()">‹ 返回</button>
+            <h2>背诵模式</h2>
+        </div>
+        <div class="recite-container" id="recite-container">
+            <p>加载中...</p>
+        </div>
+    </div>
+
+    <script>
+        // 生成二进制数据流
+        function initBinaryRain() {
+            var container = document.getElementById('binaryRain');
+            if (!container) return;
+            var colCount = Math.floor(window.innerWidth / 35);
+            for (var i = 0; i < colCount; i++) {
+                var col = document.createElement('div');
+                col.className = 'binary-column';
+                col.style.left = (i * 35 + Math.random() * 15) + 'px';
+                col.style.animationDuration = (4 + Math.random() * 6) + 's';
+                col.style.animationDelay = (-Math.random() * 8) + 's';
+                // 生成随机二进制字符串
+                var text = '';
+                for (var j = 0; j < 30; j++) {
+                    text += Math.random() > 0.5 ? '1' : '0';
+                }
+                col.textContent = text;
+                container.appendChild(col);
+            }
+        }
+        
+        var currentChapter = '';
+        var cards = [];
+        var currentCardIndex = 0;
+        var cardIsFlipped = false;
+        var wrongCardIsFlipped = false;
+        var masteredCards = [];
+        var reviewCards = [];
+        
+        // 章节名称映射
+        var chapterNames = {
+            'dalun': '导论',
+            'ch1': '第一章 新时代坚持和发展中国特色社会主义',
+            'ch2': '第二章 以中国式现代化全面推进中华民族伟大复兴',
+            'ch3': '第三章 坚持党的全面领导',
+            'ch4': '第四章 坚持以人民为中心',
+            'ch5': '第五章 全面深化改革开放',
+            'ch6': '第六章 推动高质量发展',
+            'ch7': '第七章 教育、科技、人才战略',
+            'ch8': '第八章 发展全过程人民民主',
+            'ch9': '第九章 全面依法治国',
+            'ch10': '第十章 建设社会主义文化强国',
+            'ch11': '第十一章 加强社会建设',
+            'ch12': '第十二章 建设社会主义生态文明',
+            'ch13': '第十三章 总体国家安全观',
+            'ch14': '第十四章 建设巩固国防和强大人民军队',
+            'ch15': '第十五章 一国两制和祖国统一',
+            'ch16': '第十六章 中国特色大国外交',
+            'ch17': '第十七章 全面从严治党'
+        };
+        
+        // 获取当前数据（只保留重点复习数据）
+        function getCurrentData() {
+            return chapterData;
+        }
+
+        function showPage(pageId) {
+            var pages = document.querySelectorAll('.page');
+            for (var i = 0; i < pages.length; i++) {
+                pages[i].classList.remove('active');
+            }
+            document.getElementById(pageId).classList.add('active');
+        }
+
+        function goHome() {
+            // 移除所有章节主题类
+            document.body.className = document.body.className.replace(/ch-\w+/g, '').trim();
+            showPage('home-page');
+        }
+
+        function goToModePage(chapter) {
+            currentChapter = chapter;
+            // 进入章节时重置烟花标志
+            // 移除所有章节主题类
+            document.body.className = document.body.className.replace(/ch-\w+/g, '').trim();
+            // 添加当前章节主题类
+            document.body.classList.add('ch-' + chapter);
+            // 根据章节ID显示正确的名称，并附上当前模式
+            var title = chapterNames[chapter] || '未知章节';
+            var modeLabel = '【复习】';
+            document.getElementById('mode-page-title').textContent = modeLabel + title;
+            showPage('mode-page');
+        }
+
+        function goModePage() { showPage('mode-page'); }
+
+        // 卡片模式
+        function startCardMode() {
+            var data = getCurrentData();
+            if (data[currentChapter] && data[currentChapter].length > 0) {
+                cards = data[currentChapter];
+                currentCardIndex = 0;
+                // 开始卡片模式时重置烟花标志
+                loadProgress();
+                showPage('card-page');
+                displayCard('next');
+            } else {
+                alert('【复习模式】该章节暂无卡片内容，请先导入内容！');
+            }
+        }
+
+        // 错题本模式
+        function startWrongMode() {
+            var data = getCurrentData();
+            if (data[currentChapter]) {
+                loadProgress();
+                cards = data[currentChapter].filter(function(card) {
+                    return reviewCards.indexOf(card.id) !== -1;
+                });
+                if (cards.length === 0) {
+                    alert('还没有标记"需复习"的卡片，快去学习吧！');
+                    return;
+                }
+                currentCardIndex = 0;
+                showPage('wrong-page');
+                displayWrongCard('next');
+            } else {
+                alert('【复习模式】该章节暂无卡片内容，请先导入内容！');
+            }
+        }
+
+        // 显示卡片（带动画）
+        function displayCard(direction) {
+            if (cards.length === 0) return;
+            var card = cards[currentCardIndex];
+            var flashcard = document.getElementById('flashcard');
+            // 重置为正面
+            cardIsFlipped = false;
+            flashcard.style.transform = 'rotateY(0deg)';
+            
+            // 添加进入动画
+            if (direction) {
+                flashcard.style.animation = direction === 'next' ? 'enterRight 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards' : 'enterLeft 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards';
+                setTimeout(function() { flashcard.style.animation = ''; }, 350);
+            }
+            
+            document.getElementById('card-front-text').textContent = card.front;
+            document.getElementById('card-back-text').textContent = card.back;
+            document.getElementById('card-tip').textContent = card.tip || '';
+            updateProgress();
+            
+            // 更新下一题按钮文本
+            var nextBtn = document.getElementById('next-btn');
+            if (currentCardIndex >= cards.length - 1) {
+                nextBtn.textContent = '完成 🎉';
+                nextBtn.style.background = 'linear-gradient(135deg, #34c759, #30d158)';
+            } else {
+                nextBtn.textContent = '下一题 ›';
+                nextBtn.style.background = '';
+            }
+        }
+
+        // 显示错题卡片
+        function displayWrongCard(direction) {
+            if (cards.length === 0) return;
+            var card = cards[currentCardIndex];
+            var flashcard = document.getElementById('wrong-flashcard');
+            // 重置为正面
+            wrongCardIsFlipped = false;
+            flashcard.style.transform = 'rotateY(0deg)';
+            
+            if (direction) {
+                flashcard.style.animation = direction === 'next' ? 'enterRight 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards' : 'enterLeft 0.35s cubic-bezier(0.25, 0.1, 0.25, 1) forwards';
+                setTimeout(function() { flashcard.style.animation = ''; }, 350);
+            }
+            
+            document.getElementById('wrong-front-text').textContent = card.front;
+            document.getElementById('wrong-back-text').textContent = card.back;
+            document.getElementById('wrong-tip').textContent = card.tip || '';
+            updateWrongProgress();
+        }
+
+        // 翻转卡片（直接操作 transform，不用 CSS 类）
+        function flipCard() {
+            var flashcard = document.getElementById('flashcard');
+            cardIsFlipped = !cardIsFlipped;
+            flashcard.style.transform = cardIsFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+        }
+        function flipWrongCard() {
+            var flashcard = document.getElementById('wrong-flashcard');
+            wrongCardIsFlipped = !wrongCardIsFlipped;
+            flashcard.style.transform = wrongCardIsFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+        }
+
+        // 标记卡片
+        function markCard(status) {
+            var cardId = cards[currentCardIndex].id;
+            if (status === 'mastered') {
+                if (masteredCards.indexOf(cardId) === -1) masteredCards.push(cardId);
+                reviewCards = reviewCards.filter(function(id) { return id !== cardId; });
+            } else if (status === 'review') {
+                if (reviewCards.indexOf(cardId) === -1) reviewCards.push(cardId);
+                  // 取消掌握时重置烟花标志，允许重新触发
+            }
+            saveProgress();
+            nextCard();
+        }
+
+        // 标记错题卡片
+        function markWrongCard(status) {
+            var cardId = cards[currentCardIndex].id;
+            if (status === 'mastered') {
+                if (masteredCards.indexOf(cardId) === -1) masteredCards.push(cardId);
+                reviewCards = reviewCards.filter(function(id) { return id !== cardId; });
+                // 从错题本中移除
+                cards = cards.filter(function(card) { return card.id !== cardId; });
+                if (cards.length === 0) {
+                    
+                    setTimeout(function() { goModePage(); }, 2500);
+                    return;
+                }
+                if (currentCardIndex >= cards.length) currentCardIndex = cards.length - 1;
+            } else if (status === 'review') {
+                if (reviewCards.indexOf(cardId) === -1) reviewCards.push(cardId);
+            }
+            saveProgress();
+            nextWrongCard();
+        }
+
+        // 上一题
+        function prevCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                displayCard('prev');
+            }
+        }
+        function prevWrongCard() {
+            if (currentCardIndex > 0) {
+                currentCardIndex--;
+                displayWrongCard('prev');
+            }
+        }
+
+        // 下一题
+        function nextCard() {
+            if (currentCardIndex < cards.length - 1) {
+                currentCardIndex++;
+                displayCard('next');
+            } else {
+                // 已经是最后一题，显示完成提示
+                var chapterName = chapterNames[currentChapter] || currentChapter;
+                if (confirm('🎉 本章卡片已全部浏览完毕！\n\n点击"确定"返回模式选择页，或点击"取消"继续复习。')) {
+                    goModePage();
+                }
+            }
+        }
+        function nextWrongCard() {
+            if (currentCardIndex < cards.length - 1) {
+                currentCardIndex++;
+                displayWrongCard('next');
+            } else {
+                alert('已经是最后一题了！');
+            }
+        }
+
+        // 更新进度
+        function updateProgress() {
+            var total = cards.length;
+            var mastered = Math.min(masteredCards.length, total);  // 不超过总数
+            var pct = total > 0 ? Math.round((mastered / total) * 100) : 0;
+            document.getElementById('card-progress').style.width = pct + '%';
+            document.getElementById('card-progress-text').textContent = '已掌握 ' + mastered + ' / ' + total;
+        }
+        function updateWrongProgress() {
+            var total = cards.length;
+            document.getElementById('wrong-progress').style.width = '0%';
+            document.getElementById('wrong-progress-text').textContent = (currentCardIndex + 1) + ' / ' + total;
+        }
+
+        // 保存进度
+        function saveProgress() {
+            var key = 'progress_' + currentChapter;
+            localStorage.setItem(key, JSON.stringify({
+                mastered: masteredCards,
+                review: reviewCards,
+                lastIndex: currentCardIndex
+            }));
+        }
+
+        // 加载进度
+        function loadProgress() {
+            var key = 'progress_' + currentChapter;
+            var saved = localStorage.getItem(key);
+            if (saved) {
+                var data = JSON.parse(saved);
+                masteredCards = data.mastered || [];
+                reviewCards = data.review || [];
+                // 去重 + 过滤掉不属于当前章节的无效ID
+                masteredCards = masteredCards.filter(function(id, i, arr) {
+                    return arr.indexOf(id) === i && cards.some(function(c) { return c.id === id; });
+                });
+                reviewCards = reviewCards.filter(function(id, i, arr) { return arr.indexOf(id) === i; });
+                currentCardIndex = data.lastIndex || 0;
+                if (currentCardIndex >= cards.length) currentCardIndex = cards.length - 1;
+                // 如果之前已全部掌握，恢复烟花标志
+            }
+        }
+
+        // 背诵模式
+        function startReciteMode() {
+            var texts = reciteTexts[currentChapter];
+            
+            var text = reciteTexts[currentChapter];
+            if (!text) {
+                text = '# ' + currentChapter + '　背诵资料\n\n加载中...';
+            }
+            
+            displayReciteText(text);
+            showPage('recite-page');
+        }
+
+        function displayReciteText(markdownText) {
+            var container = document.getElementById('recite-container');
+            var html = markdownText
+                .replace(/^# (.+)$/gm, '<h2>$1</h2>')
+                .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^· (.+)$/gm, '<div class="recite-item">$1</div>')
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            container.innerHTML = html;
+        }
+        
+        // 页面加载完成后初始化二进制数据流
+        window.onload = function() { initBinaryRain(); };
+    </script>
+
+</body>
+</html>
